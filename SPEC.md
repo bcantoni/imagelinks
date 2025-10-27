@@ -14,8 +14,8 @@ The program should be a UI program (not a script).
 
 The program should operate in 2 modes:
 
-1. When double-clicking to launch the program, go to a file open dialog for the user to choose the file
-2. When an image is dragged and dropped onto the program icon, it should process that file
+1. When double-clicking to launch the program, there should be an Open button which will allow the user to pick a file to process. If the system clipboard has an image, there should also be a Use Clipboard Image button which would accept and process those contents.
+2. When an image is dragged and dropped onto the program icon, it should process that file.
 
 Supported image types: JPG/JPEG, PNG, HEIC, WebP. If a non-supported file type is opened by the program, display a nice error message explaining the supported types, then exit. If a file greater than 10MB is provided, give a nice error message that it exceeded the maximum size.
 
@@ -29,7 +29,7 @@ The user-provide image should be analyzed for both QRcodes and URLs, as follows:
 
 Check the image for any QRcodes to find all that exist in the image. For each one found, decode the QRcode and return the value. The value might be text or a URL.
 
-If a URL is found in the QRcode, just display it in the QRcode section in the results.
+If a URL is found in the QRcode, display it as a clickable link in the QRcode section in the results. (But don't also include it under the URLs section.)
 
 #### URLs
 
@@ -58,11 +58,13 @@ The results window should include the following:
 
 ## Technology Choices
 
-Build this as a Node-based Electron app.
+Build this as a Node-based Electron app in JavaScript.
 
 Create it using standard Node and Electron conventions.
 
 For the image analysis components, use common (popular) Node libraries.
+
+Use Prettier.
 
 For packaging, use electron-builder.
 
@@ -74,7 +76,7 @@ For the Mac, we don't need support for signing to start with, but might add that
 
 A set of test images are included under ./test/images.
 
-The project tests should include a test against these images to detect URLs and Text.
+The project tests should include unit testing against these images to ensure that the image processing path can properly detect URLs and Text.
 
 The expected values for each image are documented below.
 

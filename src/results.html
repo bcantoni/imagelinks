@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Results - ImageLinks</title>
+    <style>
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          'Helvetica Neue', Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 8px;
+        padding: 24px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .header {
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 2px solid #e5e5e5;
+      }
+
+      .filename {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        word-break: break-word;
+      }
+
+      .section {
+        margin-bottom: 24px;
+      }
+
+      .section-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 12px;
+      }
+
+      .item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px;
+        margin-bottom: 8px;
+        background: #f9f9f9;
+        border-radius: 6px;
+        word-break: break-all;
+      }
+
+      .item-content {
+        flex: 1;
+        color: #007aff;
+        cursor: pointer;
+        text-decoration: none;
+      }
+
+      .item-content:hover {
+        text-decoration: underline;
+      }
+
+      .item-content.text {
+        color: #333;
+        cursor: default;
+      }
+
+      .item-content.text:hover {
+        text-decoration: none;
+      }
+
+      .copy-btn {
+        padding: 6px 12px;
+        font-size: 14px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s;
+        flex-shrink: 0;
+      }
+
+      .copy-btn:hover {
+        background: #f0f0f0;
+        border-color: #999;
+      }
+
+      .copy-btn:active {
+        background: #e0e0e0;
+      }
+
+      .no-results {
+        text-align: center;
+        padding: 40px 20px;
+        color: #666;
+        font-size: 16px;
+      }
+
+      .footer {
+        margin-top: 24px;
+        padding-top: 16px;
+        border-top: 1px solid #e5e5e5;
+        display: flex;
+        justify-content: center;
+      }
+
+      .close-btn {
+        padding: 10px 24px;
+        font-size: 14px;
+        border: none;
+        border-radius: 6px;
+        background: #666;
+        color: white;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      .close-btn:hover {
+        background: #555;
+      }
+
+      .close-btn:active {
+        background: #444;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="filename" id="filename"></div>
+      </div>
+
+      <div id="content"></div>
+
+      <div class="footer">
+        <button class="close-btn" id="closeBtn">Close</button>
+      </div>
+    </div>
+
+    <script>
+      let resultsData = null;
+
+      window.api.onDisplayResults((data) => {
+        resultsData = data;
+        displayResults(data);
+      });
+
+      function displayResults(data) {
+        document.getElementById('filename').textContent = data.fileName;
+
+        const contentDiv = document.getElementById('content');
+        contentDiv.innerHTML = '';
+
+        const hasQRCodes = data.qrcodes && data.qrcodes.length > 0;
+        const hasURLs = data.urls && data.urls.length > 0;
+
+        if (!hasQRCodes && !hasURLs) {
+          contentDiv.innerHTML =
+            '<div class="no-results">No QR codes or URLs found in this image.</div>';
+          return;
+        }
+
+        if (hasQRCodes) {
+          const qrSection = document.createElement('div');
+          qrSection.className = 'section';
+
+          const qrTitle = document.createElement('div');
+          qrTitle.className = 'section-title';
+          qrTitle.textContent = 'QR Codes';
+          qrSection.appendChild(qrTitle);
+
+          data.qrcodes.forEach((qrcode) => {
+            const item = createItem(qrcode, isURL(qrcode));
+            qrSection.appendChild(item);
+          });
+
+          contentDiv.appendChild(qrSection);
+        }
+
+        if (hasURLs) {
+          const urlSection = document.createElement('div');
+          urlSection.className = 'section';
+
+          const urlTitle = document.createElement('div');
+          urlTitle.className = 'section-title';
+          urlTitle.textContent = 'Links';
+          urlSection.appendChild(urlTitle);
+
+          data.urls.forEach((url) => {
+            const item = createItem(url, true);
+            urlSection.appendChild(item);
+          });
+
+          contentDiv.appendChild(urlSection);
+        }
+      }
+
+      function isURL(str) {
+        return (
+          str.startsWith('http://') ||
+          str.startsWith('https://') ||
+          /^(?:www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}/.test(str)
+        );
+      }
+
+      function createItem(content, isLink) {
+        const item = document.createElement('div');
+        item.className = 'item';
+
+        const contentElem = document.createElement(isLink ? 'a' : 'div');
+        contentElem.className = isLink ? 'item-content' : 'item-content text';
+        contentElem.textContent = content;
+
+        if (isLink) {
+          contentElem.href = '#';
+          contentElem.addEventListener('click', (e) => {
+            e.preventDefault();
+            const urlToOpen = content.startsWith('http')
+              ? content
+              : `https://${content}`;
+            window.api.openExternal(urlToOpen);
+          });
+        }
+
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'copy-btn';
+        copyBtn.textContent = '📋 Copy';
+        copyBtn.addEventListener('click', () => {
+          window.api.copyToClipboard(content);
+          copyBtn.textContent = '✓ Copied';
+          setTimeout(() => {
+            copyBtn.textContent = '📋 Copy';
+          }, 2000);
+        });
+
+        item.appendChild(contentElem);
+        item.appendChild(copyBtn);
+
+        return item;
+      }
+
+      document.getElementById('closeBtn').addEventListener('click', () => {
+        window.api.closeWindow();
+      });
+
+      // Handle Esc key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          window.api.closeWindow();
+        }
+      });
+    </script>
+  </body>
+</html>

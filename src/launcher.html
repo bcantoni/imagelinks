@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ImageLinks</title>
+    <style>
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          'Helvetica Neue', Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+
+      h1 {
+        margin-bottom: 30px;
+        font-size: 28px;
+        color: #333;
+      }
+
+      .button-container {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        width: 250px;
+      }
+
+      button {
+        padding: 12px 24px;
+        font-size: 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        background: #007aff;
+        color: white;
+        transition: background 0.2s;
+      }
+
+      button:hover:not(:disabled) {
+        background: #0051d5;
+      }
+
+      button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+
+      button:active:not(:disabled) {
+        background: #004bb5;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>ImageLinks</h1>
+    <div class="button-container">
+      <button id="openBtn">Open Image File</button>
+      <button id="clipboardBtn" disabled>Use Clipboard Image</button>
+    </div>
+
+    <script>
+      const openBtn = document.getElementById('openBtn');
+      const clipboardBtn = document.getElementById('clipboardBtn');
+
+      // Check if clipboard has an image
+      window.api.checkClipboard().then((hasImage) => {
+        if (hasImage) {
+          clipboardBtn.disabled = false;
+        }
+      });
+
+      openBtn.addEventListener('click', () => {
+        window.api.openFile();
+      });
+
+      clipboardBtn.addEventListener('click', () => {
+        window.api.processClipboard();
+      });
+    </script>
+  </body>
+</html>
