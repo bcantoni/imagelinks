@@ -2,9 +2,12 @@ const { app, BrowserWindow, ipcMain, dialog, clipboard } = require('electron');
 const path = require('path');
 const fs = require('fs').promises;
 const { analyzeImage } = require('./imageAnalyzer');
+const packageJson = require('../package.json');
 
 let launcherWindow = null;
+let loadingWindow = null;
 let resultWindows = [];
+let processingCancelled = false;
 
 // Handle file open from drag-and-drop onto app icon
 let fileToOpen = null;
@@ -20,7 +23,7 @@ app.on('open-file', (event, path) => {
 function createLauncherWindow() {
   launcherWindow = new BrowserWindow({
     width: 400,
-    height: 250,
+    height: 300,
     resizable: false,
     webPreferences: {
       nodeIntegration: false,
@@ -34,6 +37,40 @@ function createLauncherWindow() {
   launcherWindow.on('closed', () => {
     launcherWindow = null;
   });
+}
+
+function showLoadingWindow() {
+  if (loadingWindow) {
+    loadingWindow.show();
+    return;
+  }
+
+  loadingWindow = new BrowserWindow({
+    width: 300,
+    height: 200,
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
+    alwaysOnTop: true,
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js'),
+    },
+  });
+
+  loadingWindow.loadFile(path.join(__dirname, 'loading.html'));
+
+  loadingWindow.on('closed', () => {
+    loadingWindow = null;
+  });
+}
+
+function hideLoadingWindow() {
+  if (loadingWindow) {
+    loadingWindow.close();
+    loadingWindow = null;
+  }
 }
 
 function createResultWindow(results) {
@@ -87,10 +124,19 @@ async function validateImageFile(filePath) {
 
 async function processImageFile(filePath) {
   try {
+    processingCancelled = false;
+    showLoadingWindow();
+
     await validateImageFile(filePath);
 
     const fileName = path.basename(filePath);
     const results = await analyzeImage(filePath);
+
+    hideLoadingWindow();
+
+    if (processingCancelled) {
+      return;
+    }
 
     createResultWindow({
       fileName,
@@ -98,7 +144,10 @@ async function processImageFile(filePath) {
       urls: results.urls,
     });
   } catch (error) {
-    dialog.showErrorBox('Error', error.message);
+    hideLoadingWindow();
+    if (!processingCancelled) {
+      dialog.showErrorBox('Error', error.message);
+    }
   }
 }
 
@@ -110,6 +159,9 @@ async function processClipboardImage() {
       return;
     }
 
+    processingCancelled = false;
+    showLoadingWindow();
+
     // Save clipboard image to temp file
     const tempDir = app.getPath('temp');
     const tempFilePath = path.join(tempDir, `clipboard-${Date.now()}.png`);
@@ -120,16 +172,25 @@ async function processClipboardImage() {
     // Clean up temp file
     await fs.unlink(tempFilePath);
 
+    hideLoadingWindow();
+
+    if (processingCancelled) {
+      return;
+    }
+
     createResultWindow({
       fileName: 'Clipboard Image',
       qrcodes: results.qrcodes,
       urls: results.urls,
     });
   } catch (error) {
-    dialog.showErrorBox(
-      'Error',
-      `Failed to process clipboard image: ${error.message}`
-    );
+    hideLoadingWindow();
+    if (!processingCancelled) {
+      dialog.showErrorBox(
+        'Error',
+        `Failed to process clipboard image: ${error.message}`
+      );
+    }
   }
 }
 
@@ -161,6 +222,19 @@ ipcMain.handle('process-clipboard', async () => {
 
 ipcMain.handle('copy-to-clipboard', (event, text) => {
   clipboard.writeText(text);
+});
+
+ipcMain.handle('get-version', () => {
+  return packageJson.version;
+});
+
+ipcMain.handle('quit-app', () => {
+  app.quit();
+});
+
+ipcMain.handle('cancel-processing', () => {
+  processingCancelled = true;
+  hideLoadingWindow();
 });
 
 app.whenReady().then(() => {

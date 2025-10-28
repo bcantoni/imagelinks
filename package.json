@@ -1,6 +1,6 @@
 {
   "name": "imagelinks",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Extract QR codes and URLs from images",
   "main": "src/main.js",
   "scripts": {
@@ -37,6 +37,28 @@
       "target": "dmg",
       "category": "public.app-category.utilities"
     },
+    "fileAssociations": [
+      {
+        "ext": ["jpg", "jpeg"],
+        "name": "JPEG Image",
+        "role": "Viewer"
+      },
+      {
+        "ext": "png",
+        "name": "PNG Image",
+        "role": "Viewer"
+      },
+      {
+        "ext": "heic",
+        "name": "HEIC Image",
+        "role": "Viewer"
+      },
+      {
+        "ext": "webp",
+        "name": "WebP Image",
+        "role": "Viewer"
+      }
+    ],
     "win": {
       "target": "nsis"
     },

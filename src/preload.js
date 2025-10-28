@@ -12,4 +12,7 @@ contextBridge.exposeInMainWorld('api', {
   closeWindow: () => {
     window.close();
   },
+  getVersion: () => ipcRenderer.invoke('get-version'),
+  quitApp: () => ipcRenderer.invoke('quit-app'),
+  cancelProcessing: () => ipcRenderer.invoke('cancel-processing'),
 });

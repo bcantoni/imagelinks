@@ -12,17 +12,22 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
-        height: 100vh;
+        height: auto;
         margin: 0;
-        padding: 20px;
+        padding: 40px 20px 20px;
         background: #f5f5f5;
       }
 
       h1 {
-        margin-bottom: 30px;
+        margin-bottom: 5px;
         font-size: 28px;
         color: #333;
+      }
+
+      .version {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 30px;
       }
 
       .button-container {
@@ -59,6 +64,7 @@
   </head>
   <body>
     <h1>ImageLinks</h1>
+    <div class="version" id="version"></div>
     <div class="button-container">
       <button id="openBtn">Open Image File</button>
       <button id="clipboardBtn" disabled>Use Clipboard Image</button>
@@ -67,6 +73,12 @@
     <script>
       const openBtn = document.getElementById('openBtn');
       const clipboardBtn = document.getElementById('clipboardBtn');
+      const versionEl = document.getElementById('version');
+
+      // Get and display version
+      window.api.getVersion().then((version) => {
+        versionEl.textContent = `v${version}`;
+      });
 
       // Check if clipboard has an image
       window.api.checkClipboard().then((hasImage) => {
@@ -81,6 +93,13 @@
 
       clipboardBtn.addEventListener('click', () => {
         window.api.processClipboard();
+      });
+
+      // Handle ESC key to quit app
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          window.api.quitApp();
+        }
       });
     </script>
   </body>
