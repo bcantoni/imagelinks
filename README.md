@@ -2,6 +2,8 @@
 
 A simple desktop application that extracts QR codes and web URLs from images. Drop an image onto the app, and ImageLinks will analyze it to find all QR codes and clickable links.
 
+![ImageLinks demo](/media/drag-drop-demo.gif)
+
 ## Features
 
 - **QR Code Detection** - Automatically finds and decodes all QR codes in an image
