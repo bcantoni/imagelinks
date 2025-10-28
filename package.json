@@ -40,7 +40,12 @@
     },
     "fileAssociations": [
       {
-        "ext": ["jpg", "jpeg"],
+        "ext": "jpg",
+        "name": "JPEG Image",
+        "role": "Viewer"
+      },
+      {
+        "ext": "jpeg",
         "name": "JPEG Image",
         "role": "Viewer"
       },
