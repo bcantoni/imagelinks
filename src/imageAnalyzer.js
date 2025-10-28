@@ -20,13 +20,30 @@ function scanImageForQR(img) {
 }
 
 /**
+ * Checks if two QR codes are at similar locations (to avoid duplicates from preprocessing)
+ * @param {Object} loc1 - First location object
+ * @param {Object} loc2 - Second location object
+ * @param {number} threshold - Distance threshold in pixels
+ * @returns {boolean} True if locations are similar
+ */
+function isSimilarLocation(loc1, loc2, threshold = 50) {
+  if (!loc1 || !loc2) return false;
+
+  // Compare top-left corners
+  const dx = Math.abs(loc1.topLeftCorner.x - loc2.topLeftCorner.x);
+  const dy = Math.abs(loc1.topLeftCorner.y - loc2.topLeftCorner.y);
+
+  return dx < threshold && dy < threshold;
+}
+
+/**
  * Detects QR codes in an image
  * @param {Jimp} image - Jimp image object
  * @returns {Array} Array of decoded QR code values
  */
 async function detectQRCodes(image) {
   const qrcodes = [];
-  const foundValues = new Set();
+  const foundLocations = [];
 
   // Upscale if image is small (helps with QR code detection)
   let workingImage = image.clone();
@@ -51,17 +68,19 @@ async function detectQRCodes(image) {
 
     // Scan full image
     const fullCode = scanImageForQR(processed);
-    if (
-      fullCode &&
-      fullCode.data &&
-      fullCode.data.trim() &&
-      !foundValues.has(fullCode.data)
-    ) {
-      foundValues.add(fullCode.data);
-      qrcodes.push({
-        value: fullCode.data,
-        isURL: isURL(fullCode.data),
-      });
+    if (fullCode && fullCode.data && fullCode.data.trim()) {
+      // Check if we've already found a QR code at this location
+      const isDuplicate = foundLocations.some((loc) =>
+        isSimilarLocation(fullCode.location, loc)
+      );
+
+      if (!isDuplicate) {
+        foundLocations.push(fullCode.location);
+        qrcodes.push({
+          value: fullCode.data,
+          isURL: isURL(fullCode.data),
+        });
+      }
     }
 
     // For multiple QR codes, divide image into smaller sections
@@ -82,17 +101,26 @@ async function detectQRCodes(image) {
           .crop(x, 0, width, processed.bitmap.height);
         const sectionCode = scanImageForQR(section);
 
-        if (
-          sectionCode &&
-          sectionCode.data &&
-          sectionCode.data.trim() &&
-          !foundValues.has(sectionCode.data)
-        ) {
-          foundValues.add(sectionCode.data);
-          qrcodes.push({
-            value: sectionCode.data,
-            isURL: isURL(sectionCode.data),
-          });
+        if (sectionCode && sectionCode.data && sectionCode.data.trim()) {
+          // Adjust location coordinates to account for crop offset
+          const adjustedLocation = {
+            topLeftCorner: {
+              x: sectionCode.location.topLeftCorner.x + x,
+              y: sectionCode.location.topLeftCorner.y,
+            },
+          };
+
+          const isDuplicate = foundLocations.some((loc) =>
+            isSimilarLocation(adjustedLocation, loc)
+          );
+
+          if (!isDuplicate) {
+            foundLocations.push(adjustedLocation);
+            qrcodes.push({
+              value: sectionCode.data,
+              isURL: isURL(sectionCode.data),
+            });
+          }
         }
       } catch (e) {
         continue;
@@ -117,17 +145,26 @@ async function detectQRCodes(image) {
           const section = processed.clone().crop(x, y, width, height);
           const sectionCode = scanImageForQR(section);
 
-          if (
-            sectionCode &&
-            sectionCode.data &&
-            sectionCode.data.trim() &&
-            !foundValues.has(sectionCode.data)
-          ) {
-            foundValues.add(sectionCode.data);
-            qrcodes.push({
-              value: sectionCode.data,
-              isURL: isURL(sectionCode.data),
-            });
+          if (sectionCode && sectionCode.data && sectionCode.data.trim()) {
+            // Adjust location coordinates to account for crop offset
+            const adjustedLocation = {
+              topLeftCorner: {
+                x: sectionCode.location.topLeftCorner.x + x,
+                y: sectionCode.location.topLeftCorner.y + y,
+              },
+            };
+
+            const isDuplicate = foundLocations.some((loc) =>
+              isSimilarLocation(adjustedLocation, loc)
+            );
+
+            if (!isDuplicate) {
+              foundLocations.push(adjustedLocation);
+              qrcodes.push({
+                value: sectionCode.data,
+                isURL: isURL(sectionCode.data),
+              });
+            }
           }
         } catch (e) {
           continue;
@@ -135,7 +172,6 @@ async function detectQRCodes(image) {
       }
     }
   }
-
   return qrcodes;
 }
 

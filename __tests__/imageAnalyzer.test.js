@@ -106,6 +106,18 @@ describe('ImageAnalyzer', () => {
       expect(results.urls).toEqual([]);
     }, 60000);
 
+    test('qr-marketing-2.jpg detects two identical QR codes', async () => {
+      const imagePath = path.join(__dirname, '../test/images/qr-marketing-2.jpg');
+      const expected_url = 'http://simplyhire.me';
+
+      const results = await analyzeImage(imagePath);
+
+      // Should detect both QR codes even though they have the same URL
+      expect(results.qrcodes.length).toBe(2);
+      expect(results.qrcodes).toEqual([expected_url, expected_url]);
+      expect(results.urls).toEqual([]);
+    }, 60000);
+
     test('qrcode.png detects expected QR code', async () => {
       const imagePath = path.join(__dirname, '../test/images/qrcode.png');
       const expected_url = 'https://dspy.ai';
