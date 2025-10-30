@@ -63,7 +63,11 @@ async function detectQRCodes(image) {
     (img) => img.clone().greyscale().contrast(0.8).brightness(0.1), // Very high contrast with brightness
   ];
 
-  for (let methodIndex = 0; methodIndex < preprocessMethods.length; methodIndex++) {
+  for (
+    let methodIndex = 0;
+    methodIndex < preprocessMethods.length;
+    methodIndex++
+  ) {
     const preprocess = preprocessMethods[methodIndex];
     const processed = preprocess(workingImage);
 
@@ -263,8 +267,9 @@ function extractURLsFromText(text) {
         // Replace the original lines with the joined URL in the cleaned text
         cleanedText = cleanedText.replace(
           currentLine + '\n' + nextLine,
-          currentLine.replace(partialMatch[0], joinedUrl) + '\n' +
-          nextLine.replace(continuationMatch[0], '')
+          currentLine.replace(partialMatch[0], joinedUrl) +
+            '\n' +
+            nextLine.replace(continuationMatch[0], '')
         );
       }
     }
@@ -276,7 +281,20 @@ function extractURLsFromText(text) {
   if (completeMatches) {
     completeMatches.forEach((url) => {
       // Clean up the URL further
-      const cleanUrl = url.replace(/[.,;:!?)]$/, ''); // Remove trailing punctuation
+      let cleanUrl = url;
+
+      // Remove trailing punctuation, but be smart about parentheses
+      // Only remove trailing ) if there's no opening ( or if it's unbalanced
+      const openParens = (cleanUrl.match(/\(/g) || []).length;
+      const closeParens = (cleanUrl.match(/\)/g) || []).length;
+
+      if (closeParens > openParens) {
+        // Unbalanced - remove trailing punctuation including )
+        cleanUrl = cleanUrl.replace(/[.,;:!?)]$/, '');
+      } else {
+        // Balanced or no ) at end - only remove other punctuation
+        cleanUrl = cleanUrl.replace(/[.,;:!?]$/, '');
+      }
 
       // Filter out obviously invalid URLs (e.g., file extensions that aren't domains)
       // Check if the domain ends with common file extensions
@@ -294,8 +312,9 @@ function extractURLsFromText(text) {
   }
 
   // Pattern for partial URLs like www.example.com or example.com/path
+  // Updated to handle subdomains like en.wikipedia.org
   const partialURLPattern =
-    /(?:www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s<>"{}|\\^`\[\]]*)?/gi;
+    /(?:www\.)?(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?:\/[^\s<>"{}|\\^`\[\]]*)?/gi;
   const partialMatches = cleanedText.match(partialURLPattern);
 
   if (partialMatches) {
@@ -311,7 +330,21 @@ function extractURLsFromText(text) {
 
       if (!isPartOfComplete) {
         // Clean and add https:// prefix to partial URLs
-        const cleanMatch = match.replace(/[.,;:!?)]$/, '');
+        let cleanMatch = match;
+
+        // Remove trailing punctuation, but be smart about parentheses
+        // Only remove trailing ) if there's no opening ( or if it's unbalanced
+        const openParens = (cleanMatch.match(/\(/g) || []).length;
+        const closeParens = (cleanMatch.match(/\)/g) || []).length;
+
+        if (closeParens > openParens) {
+          // Unbalanced - remove trailing punctuation including )
+          cleanMatch = cleanMatch.replace(/[.,;:!?)]$/, '');
+        } else {
+          // Balanced or no ) at end - only remove other punctuation
+          cleanMatch = cleanMatch.replace(/[.,;:!?]$/, '');
+        }
+
         const url = cleanMatch.startsWith('http')
           ? cleanMatch
           : `https://${cleanMatch}`;

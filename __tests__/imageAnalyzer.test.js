@@ -1,4 +1,8 @@
-const { analyzeImage, extractURLsFromText, isURL } = require('../src/imageAnalyzer');
+const {
+  analyzeImage,
+  extractURLsFromText,
+  isURL,
+} = require('../src/imageAnalyzer');
 const path = require('path');
 
 describe('ImageAnalyzer', () => {
@@ -71,7 +75,10 @@ describe('ImageAnalyzer', () => {
     }, 60000);
 
     test('multiple-qrcodes.jpg detects expected QR codes', async () => {
-      const imagePath = path.join(__dirname, '../test/images/multiple-qrcodes.jpg');
+      const imagePath = path.join(
+        __dirname,
+        '../test/images/multiple-qrcodes.jpg'
+      );
       const expected_url =
         'https://search.google.com/local/writereview?placeid=ChIJ79DNyOvG10cRbHOP0u7w1CM';
 
@@ -85,7 +92,10 @@ describe('ImageAnalyzer', () => {
     }, 60000);
 
     test('qr-marketing-2.jpg detects two identical QR codes', async () => {
-      const imagePath = path.join(__dirname, '../test/images/qr-marketing-2.jpg');
+      const imagePath = path.join(
+        __dirname,
+        '../test/images/qr-marketing-2.jpg'
+      );
       const expected_url = 'http://simplyhire.me';
 
       const results = await analyzeImage(imagePath);
@@ -124,6 +134,17 @@ describe('ImageAnalyzer', () => {
     test('url-wrapped.png detects wrapped URL across lines', async () => {
       const imagePath = path.join(__dirname, '../test/images/url-wrapped.png');
       const expected_url = 'https://en.wikipedia.org/wiki/Chevrolet_Suburban';
+
+      const results = await analyzeImage(imagePath);
+
+      expect(results.qrcodes).toEqual([]);
+      expect(results.urls.length).toBeGreaterThanOrEqual(1);
+      expect(results.urls).toContain(expected_url);
+    }, 60000);
+
+    test('web-wikipedia.png detects URL in browser with anchor', async () => {
+      const imagePath = path.join(__dirname, '../test/images/web-wikipedia.png');
+      const expected_url = 'https://en.wikipedia.org/wiki/Chevrolet_Suburban#Eleventh_generation_(2015)';
 
       const results = await analyzeImage(imagePath);
 
