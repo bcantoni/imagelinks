@@ -63,7 +63,8 @@ async function detectQRCodes(image) {
     (img) => img.clone().greyscale().contrast(0.8).brightness(0.1), // Very high contrast with brightness
   ];
 
-  for (const preprocess of preprocessMethods) {
+  for (let methodIndex = 0; methodIndex < preprocessMethods.length; methodIndex++) {
+    const preprocess = preprocessMethods[methodIndex];
     const processed = preprocess(workingImage);
 
     // Scan full image
@@ -128,48 +129,57 @@ async function detectQRCodes(image) {
     }
 
     // Try grid sections as well
-    const gridSize = 4;
-    const sectionWidth = Math.floor(processed.bitmap.width / gridSize);
-    const sectionHeight = Math.floor(processed.bitmap.height / gridSize);
+    // Skip expensive grid scan if we already found 2+ QR codes from full + horizontal scans
+    if (qrcodes.length < 2) {
+      const gridSize = 4;
+      const sectionWidth = Math.floor(processed.bitmap.width / gridSize);
+      const sectionHeight = Math.floor(processed.bitmap.height / gridSize);
 
-    for (let row = 0; row < gridSize; row++) {
-      for (let col = 0; col < gridSize; col++) {
-        const x = col * sectionWidth;
-        const y = row * sectionHeight;
-        const width = Math.min(sectionWidth, processed.bitmap.width - x);
-        const height = Math.min(sectionHeight, processed.bitmap.height - y);
+      for (let row = 0; row < gridSize; row++) {
+        for (let col = 0; col < gridSize; col++) {
+          const x = col * sectionWidth;
+          const y = row * sectionHeight;
+          const width = Math.min(sectionWidth, processed.bitmap.width - x);
+          const height = Math.min(sectionHeight, processed.bitmap.height - y);
 
-        if (width < 50 || height < 50) continue;
+          if (width < 50 || height < 50) continue;
 
-        try {
-          const section = processed.clone().crop(x, y, width, height);
-          const sectionCode = scanImageForQR(section);
+          try {
+            const section = processed.clone().crop(x, y, width, height);
+            const sectionCode = scanImageForQR(section);
 
-          if (sectionCode && sectionCode.data && sectionCode.data.trim()) {
-            // Adjust location coordinates to account for crop offset
-            const adjustedLocation = {
-              topLeftCorner: {
-                x: sectionCode.location.topLeftCorner.x + x,
-                y: sectionCode.location.topLeftCorner.y + y,
-              },
-            };
+            if (sectionCode && sectionCode.data && sectionCode.data.trim()) {
+              // Adjust location coordinates to account for crop offset
+              const adjustedLocation = {
+                topLeftCorner: {
+                  x: sectionCode.location.topLeftCorner.x + x,
+                  y: sectionCode.location.topLeftCorner.y + y,
+                },
+              };
 
-            const isDuplicate = foundLocations.some((loc) =>
-              isSimilarLocation(adjustedLocation, loc)
-            );
+              const isDuplicate = foundLocations.some((loc) =>
+                isSimilarLocation(adjustedLocation, loc)
+              );
 
-            if (!isDuplicate) {
-              foundLocations.push(adjustedLocation);
-              qrcodes.push({
-                value: sectionCode.data,
-                isURL: isURL(sectionCode.data),
-              });
+              if (!isDuplicate) {
+                foundLocations.push(adjustedLocation);
+                qrcodes.push({
+                  value: sectionCode.data,
+                  isURL: isURL(sectionCode.data),
+                });
+              }
             }
+          } catch (e) {
+            continue;
           }
-        } catch (e) {
-          continue;
         }
       }
+    }
+
+    // Early exit from preprocessing loop if we found multiple QR codes
+    // (Most images have 1-2 QR codes, so this is a good stopping point)
+    if (qrcodes.length >= 2) {
+      break;
     }
   }
   return qrcodes;
