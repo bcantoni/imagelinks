@@ -237,6 +237,39 @@ function extractURLsFromText(text) {
     .replace(/ﬂ/g, 'fl') // ligature fl
     .replace(/--+/g, '-'); // multiple consecutive dashes to single dash
 
+  // Handle wrapped URLs: detect and join URL fragments split across lines
+  // Look for patterns like "https://example.com/some/path" split into:
+  //   "https://example.com/some/pa"
+  //   "th/more"
+  const lines = cleanedText.split(/\r?\n/);
+  for (let i = 0; i < lines.length - 1; i++) {
+    const currentLine = lines[i].trim();
+    const nextLine = lines[i + 1].trim();
+
+    // Check if current line looks like it ends with a partial URL
+    // (starts with http/https or www, and doesn't end with common sentence terminators)
+    const partialUrlPattern = /https?:\/\/[^\s]*[^.\s,;:!?)\]}>]$/;
+    const partialMatch = currentLine.match(partialUrlPattern);
+
+    if (partialMatch) {
+      // Check if next line could be a URL continuation
+      // (starts with alphanumeric, underscore, or path characters, no leading http)
+      const continuationPattern = /^[a-zA-Z0-9_\-\/\.#?&=]+/;
+      const continuationMatch = nextLine.match(continuationPattern);
+
+      if (continuationMatch && !nextLine.match(/^https?:\/\//)) {
+        // Join the fragments
+        const joinedUrl = partialMatch[0] + continuationMatch[0];
+        // Replace the original lines with the joined URL in the cleaned text
+        cleanedText = cleanedText.replace(
+          currentLine + '\n' + nextLine,
+          currentLine.replace(partialMatch[0], joinedUrl) + '\n' +
+          nextLine.replace(continuationMatch[0], '')
+        );
+      }
+    }
+  }
+
   // Pattern for complete URLs with http:// or https://
   const completeURLPattern = /https?:\/\/[^\s<>"{}|\\^`\[\]]+/gi;
   const completeMatches = cleanedText.match(completeURLPattern);

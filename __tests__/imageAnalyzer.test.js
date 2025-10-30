@@ -120,5 +120,16 @@ describe('ImageAnalyzer', () => {
       expect(foundText).toBe(true);
       expect(results.urls).toEqual([]);
     }, 60000);
+
+    test('url-wrapped.png detects wrapped URL across lines', async () => {
+      const imagePath = path.join(__dirname, '../test/images/url-wrapped.png');
+      const expected_url = 'https://en.wikipedia.org/wiki/Chevrolet_Suburban';
+
+      const results = await analyzeImage(imagePath);
+
+      expect(results.qrcodes).toEqual([]);
+      expect(results.urls.length).toBeGreaterThanOrEqual(1);
+      expect(results.urls).toContain(expected_url);
+    }, 60000);
   });
 });
