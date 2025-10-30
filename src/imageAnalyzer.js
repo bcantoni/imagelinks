@@ -184,40 +184,25 @@ async function detectURLsFromOCR(imagePath) {
   try {
     const allURLs = new Set();
 
-    // Try different orientations (0, 90, 180, 270 degrees)
-    const rotations = [0, 90, 180, 270];
+    // Preprocess image for better OCR results
+    const image = await Jimp.read(imagePath);
 
-    for (const rotation of rotations) {
-      // Preprocess image for better OCR results
-      const image = await Jimp.read(imagePath);
+    // Convert to grayscale and increase contrast
+    image.greyscale().contrast(0.3);
 
-      // Rotate if needed
-      if (rotation > 0) {
-        image.rotate(rotation);
-      }
+    // Convert to buffer for Tesseract
+    const buffer = await image.getBufferAsync(Jimp.MIME_PNG);
 
-      // Convert to grayscale and increase contrast
-      image.greyscale().contrast(0.3);
+    const {
+      data: { text },
+    } = await Tesseract.recognize(buffer, 'eng', {
+      logger: () => {}, // Suppress logging
+      tessedit_char_whitelist: null,
+      preserve_interword_spaces: '1',
+    });
 
-      // Convert to buffer for Tesseract
-      const buffer = await image.getBufferAsync(Jimp.MIME_PNG);
-
-      const {
-        data: { text },
-      } = await Tesseract.recognize(buffer, 'eng', {
-        logger: () => {}, // Suppress logging
-        tessedit_char_whitelist: null,
-        preserve_interword_spaces: '1',
-      });
-
-      const urls = extractURLsFromText(text);
-      urls.forEach((url) => allURLs.add(url));
-
-      // If we found URLs, no need to try other rotations
-      if (urls.length > 0) {
-        break;
-      }
-    }
+    const urls = extractURLsFromText(text);
+    urls.forEach((url) => allURLs.add(url));
 
     return Array.from(allURLs);
   } catch (error) {

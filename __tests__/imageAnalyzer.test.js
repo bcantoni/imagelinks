@@ -48,28 +48,6 @@ describe('ImageAnalyzer', () => {
   });
 
   describe('analyzeImage - Test Images', () => {
-    test('text-note-L.png detects expected URLs', async () => {
-      const imagePath = path.join(__dirname, '../test/images/text-note-L.png');
-      const expected_urls = [
-        'https://hackernoon.com/how-to-take-screenshots-in-the-browser-using-',
-        'https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview',
-        'https://blog.saeloun.com/2022/06/09/copying-texts-to-clipboard-using-',
-        'https://github.com/Y2Z/monolith',
-        'https://docs.anthropic.com/en/docs/build-with-claude/tool-use/text-editor-',
-      ];
-
-      const results = await analyzeImage(imagePath);
-
-      expect(results.qrcodes).toEqual([]);
-      expect(results.urls.length).toBeGreaterThanOrEqual(expected_urls.length);
-
-      // Check that all expected URLs are found
-      expected_urls.forEach((expectedUrl) => {
-        const found = results.urls.some((url) => url.includes(expectedUrl));
-        expect(found).toBe(true);
-      });
-    }, 60000);
-
     test('text-note.png detects expected URLs', async () => {
       const imagePath = path.join(__dirname, '../test/images/text-note.png');
       const expected_urls = [
