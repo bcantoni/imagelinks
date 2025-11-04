@@ -206,9 +206,11 @@
 
       function isURL(str) {
         return (
-          str.startsWith('http://') ||
-          str.startsWith('https://') ||
-          /^(?:www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}/.test(str)
+          str && (
+            str.startsWith('http://') ||
+            str.startsWith('https://') ||
+            /^(?:www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}/.test(str)
+          )
         );
       }
 
@@ -216,18 +218,49 @@
         const item = document.createElement('div');
         item.className = 'item';
 
+        const raw = String(content || '').trim();
+
+        // If it's a link, normalize/construct a proper URL we'll use for href and openExternal.
+        let urlToOpen = null;
+        if (isLink) {
+          if (raw.startsWith('http://') || raw.startsWith('https://')) {
+            urlToOpen = raw;
+          } else {
+            // Prepend https if missing, then encode
+            urlToOpen = 'https://' + raw;
+          }
+          // Optionally encode spaces and other characters
+          try {
+            // Only encode the parts that need encoding; URL constructor will throw if invalid
+            const u = new URL(urlToOpen);
+            urlToOpen = u.toString();
+          } catch (err) {
+            // fallback: simple encodeURI
+            urlToOpen = encodeURI(urlToOpen);
+          }
+        }
+
         const contentElem = document.createElement(isLink ? 'a' : 'div');
         contentElem.className = isLink ? 'item-content' : 'item-content text';
-        contentElem.textContent = content;
+        contentElem.textContent = raw;
 
-        if (isLink) {
-          contentElem.href = '#';
+        if (isLink && urlToOpen) {
+          // Set a real href so the element behaves like a real link (keyboard, middle-click, etc.)
+          contentElem.href = urlToOpen;
+          contentElem.target = '_blank';
+          contentElem.rel = 'noopener noreferrer';
+          contentElem.title = urlToOpen;
+
+          // Use the preload API to open external links (Electron: shell.openExternal)
           contentElem.addEventListener('click', (e) => {
+            // Prevent the default navigation in case we want the main process to open it externally.
             e.preventDefault();
-            const urlToOpen = content.startsWith('http')
-              ? content
-              : `https://${content}`;
-            window.api.openExternal(urlToOpen);
+            try {
+              window.api.openExternal(urlToOpen);
+            } catch (err) {
+              // As a fallback, allow the browser to open the link (this should rarely happen in Electron)
+              window.open(urlToOpen, '_blank', 'noopener');
+            }
           });
         }
 
