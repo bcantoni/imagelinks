@@ -143,8 +143,12 @@ describe('ImageAnalyzer', () => {
     }, 60000);
 
     test('web-wikipedia.png detects URL in browser with anchor', async () => {
-      const imagePath = path.join(__dirname, '../test/images/web-wikipedia.png');
-      const expected_url = 'https://en.wikipedia.org/wiki/Chevrolet_Suburban#Eleventh_generation_(2015)';
+      const imagePath = path.join(
+        __dirname,
+        '../test/images/web-wikipedia.png'
+      );
+      const expected_url =
+        'https://en.wikipedia.org/wiki/Chevrolet_Suburban#Eleventh_generation_(2015)';
 
       const results = await analyzeImage(imagePath);
 
