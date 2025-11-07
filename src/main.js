@@ -1,4 +1,11 @@
-const { app, BrowserWindow, ipcMain, dialog, clipboard } = require('electron');
+const {
+  app,
+  BrowserWindow,
+  ipcMain,
+  dialog,
+  clipboard,
+  shell,
+} = require('electron');
 const path = require('path');
 const fs = require('fs').promises;
 const { analyzeImage } = require('./imageAnalyzer');
@@ -87,6 +94,12 @@ function createResultWindow(results) {
   });
 
   resultWindow.loadFile(path.join(__dirname, 'results.html'));
+
+  // Prevent new windows from opening - use system browser for external links
+  resultWindow.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url);
+    return { action: 'deny' };
+  });
 
   resultWindow.webContents.on('did-finish-load', () => {
     resultWindow.webContents.send('display-results', results);
