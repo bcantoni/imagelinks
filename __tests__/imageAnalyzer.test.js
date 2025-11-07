@@ -143,8 +143,23 @@ describe('ImageAnalyzer', () => {
     }, 60000);
 
     test('web-wikipedia.png detects URL in browser with anchor', async () => {
-      const imagePath = path.join(__dirname, '../test/images/web-wikipedia.png');
-      const expected_url = 'https://en.wikipedia.org/wiki/Chevrolet_Suburban#Eleventh_generation_(2015)';
+      const imagePath = path.join(
+        __dirname,
+        '../test/images/web-wikipedia.png'
+      );
+      const expected_url =
+        'https://en.wikipedia.org/wiki/Chevrolet_Suburban#Eleventh_generation_(2015)';
+
+      const results = await analyzeImage(imagePath);
+
+      expect(results.qrcodes).toEqual([]);
+      expect(results.urls.length).toBeGreaterThanOrEqual(1);
+      expect(results.urls).toContain(expected_url);
+    }, 60000);
+
+    test('github-pr.png detects GitHub PR URL with path separators', async () => {
+      const imagePath = path.join(__dirname, '../test/images/github-pr.png');
+      const expected_url = 'https://github.com/bcantoni/imagelinks/pull/1';
 
       const results = await analyzeImage(imagePath);
 

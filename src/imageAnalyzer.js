@@ -201,6 +201,15 @@ async function detectURLsFromOCR(imagePath) {
     // Preprocess image for better OCR results
     const image = await Jimp.read(imagePath);
 
+    // Scale up small images for better character recognition (especially for URLs)
+    if (image.bitmap.width < 1000 || image.bitmap.height < 1000) {
+      const scale = Math.max(
+        1000 / image.bitmap.width,
+        1000 / image.bitmap.height
+      );
+      image.scale(Math.min(scale, 2), Jimp.RESIZE_BICUBIC); // Cap at 2x to avoid excessive memory usage
+    }
+
     // Convert to grayscale and increase contrast
     image.greyscale().contrast(0.3);
 
@@ -239,7 +248,10 @@ function extractURLsFromText(text) {
     .replace(/–/g, '-') // en-dash to hyphen
     .replace(/ﬁ/g, 'fi') // ligature fi
     .replace(/ﬂ/g, 'fl') // ligature fl
-    .replace(/--+/g, '-'); // multiple consecutive dashes to single dash
+    .replace(/--+/g, '-') // multiple consecutive dashes to single dash
+    // Fix common OCR space issues in URLs
+    .replace(/https?:\/\/(\S+)\.\s+([a-zA-Z]{2,})/gi, 'https://$1.$2') // "example. com" -> "example.com"
+    .replace(/([a-zA-Z0-9-]+)\.\s+([a-zA-Z]{2,})\//g, '$1.$2/'); // "example. com/" -> "example.com/"
 
   // Handle wrapped URLs: detect and join URL fragments split across lines
   // Look for patterns like "https://example.com/some/path" split into:
@@ -385,8 +397,21 @@ async function analyzeImage(imagePath) {
     const ocrURLs = await detectURLsFromOCR(imagePath);
 
     // Filter out URLs that are already in QR codes
+    // Normalize URLs for comparison (case-insensitive, protocol-agnostic)
+    const normalizeUrl = (url) => {
+      return url
+        .toLowerCase()
+        .replace(/^https?:\/\//, '') // Remove protocol
+        .replace(/\/$/, ''); // Remove trailing slash
+    };
+
     const qrcodeURLs = qrcodes.filter((qr) => qr.isURL).map((qr) => qr.value);
-    const filteredURLs = ocrURLs.filter((url) => !qrcodeURLs.includes(url));
+    const normalizedQRUrls = qrcodeURLs.map(normalizeUrl);
+
+    const filteredURLs = ocrURLs.filter((url) => {
+      const normalizedUrl = normalizeUrl(url);
+      return !normalizedQRUrls.includes(normalizedUrl);
+    });
 
     return {
       qrcodes: qrcodes.map((qr) => qr.value),
