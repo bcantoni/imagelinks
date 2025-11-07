@@ -156,5 +156,16 @@ describe('ImageAnalyzer', () => {
       expect(results.urls.length).toBeGreaterThanOrEqual(1);
       expect(results.urls).toContain(expected_url);
     }, 60000);
+
+    test('github-pr.png detects GitHub PR URL with path separators', async () => {
+      const imagePath = path.join(__dirname, '../test/images/github-pr.png');
+      const expected_url = 'https://github.com/bcantoni/imagelinks/pull/1';
+
+      const results = await analyzeImage(imagePath);
+
+      expect(results.qrcodes).toEqual([]);
+      expect(results.urls.length).toBeGreaterThanOrEqual(1);
+      expect(results.urls).toContain(expected_url);
+    }, 60000);
   });
 });
