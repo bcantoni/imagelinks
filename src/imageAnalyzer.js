@@ -1,18 +1,37 @@
-const Jimp = require('jimp');
+const sharp = require('sharp');
 const jsQR = require('jsqr');
 const Tesseract = require('tesseract.js');
 
 /**
- * Scans image data for QR code with different preprocessing
- * @param {Jimp} img - Jimp image object
+ * Converts Sharp image to raw RGBA buffer for jsQR
+ * @param {Sharp} image - Sharp instance
+ * @returns {Object} Image data with buffer, width, height
+ */
+async function sharpToImageData(image) {
+  // Convert to PNG buffer first, then read back to ensure proper RGBA format
+  // This handles greyscale -> RGB conversion automatically
+  const pngBuffer = await image.clone().png().toBuffer();
+
+  // Now read it back and convert to raw RGBA
+  const { data, info } = await sharp(pngBuffer)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  return {
+    data: new Uint8ClampedArray(data),
+    width: info.width,
+    height: info.height,
+  };
+}
+
+/**
+ * Scans image data for QR code
+ * @param {Sharp} image - Sharp instance
  * @returns {Object|null} Decoded QR code or null
  */
-function scanImageForQR(img) {
-  const imageData = {
-    data: new Uint8ClampedArray(img.bitmap.data),
-    width: img.bitmap.width,
-    height: img.bitmap.height,
-  };
+async function scanImageForQR(image) {
+  const imageData = await sharpToImageData(image);
 
   return jsQR(imageData.data, imageData.width, imageData.height, {
     inversionAttempts: 'attemptBoth',
@@ -38,29 +57,50 @@ function isSimilarLocation(loc1, loc2, threshold = 50) {
 
 /**
  * Detects QR codes in an image
- * @param {Jimp} image - Jimp image object
+ * @param {string} imagePath - Path to image file
  * @returns {Array} Array of decoded QR code values
  */
-async function detectQRCodes(image) {
+async function detectQRCodes(imagePath) {
   const qrcodes = [];
   const foundLocations = [];
 
+  // Get image metadata
+  const metadata = await sharp(imagePath).metadata();
+
   // Upscale if image is small (helps with QR code detection)
-  let workingImage = image.clone();
-  if (workingImage.bitmap.width < 800 || workingImage.bitmap.height < 800) {
-    const scale = Math.max(
-      800 / workingImage.bitmap.width,
-      800 / workingImage.bitmap.height
-    );
-    workingImage.scale(scale, Jimp.RESIZE_BICUBIC);
+  let workingImage = sharp(imagePath);
+  let currentWidth = metadata.width;
+  let currentHeight = metadata.height;
+
+  if (currentWidth < 800 || currentHeight < 800) {
+    const scale = Math.max(800 / currentWidth, 800 / currentHeight);
+    const newWidth = Math.round(currentWidth * scale);
+    const newHeight = Math.round(currentHeight * scale);
+    workingImage = workingImage.resize(newWidth, newHeight, {
+      kernel: 'cubic',
+    });
+    currentWidth = newWidth;
+    currentHeight = newHeight;
   }
+
+  // Get the scaled image as a buffer for reuse
+  const workingBuffer = await workingImage.toBuffer();
 
   // Try different preprocessing methods
   const preprocessMethods = [
-    (img) => img.clone(), // Original
-    (img) => img.clone().greyscale().contrast(0.5), // High contrast grayscale
-    (img) => img.clone().greyscale().normalize(), // Normalized grayscale
-    (img) => img.clone().greyscale().contrast(0.8).brightness(0.1), // Very high contrast with brightness
+    { name: 'Original', fn: (img) => img }, // Original
+    {
+      name: 'Greyscale + Normalise',
+      fn: (img) => img.greyscale().normalise(),
+    }, // Normalized greyscale
+    {
+      name: 'Greyscale + Linear',
+      fn: (img) => img.greyscale().linear(1.5, -(128 * 0.5)),
+    }, // High contrast
+    {
+      name: 'Greyscale + Normalise + Modulate',
+      fn: (img) => img.greyscale().normalise().modulate({ brightness: 1.1 }),
+    }, // Bright normalized
   ];
 
   for (
@@ -68,11 +108,11 @@ async function detectQRCodes(image) {
     methodIndex < preprocessMethods.length;
     methodIndex++
   ) {
-    const preprocess = preprocessMethods[methodIndex];
-    const processed = preprocess(workingImage);
+    const { name, fn } = preprocessMethods[methodIndex];
+    const processed = fn(sharp(workingBuffer));
 
     // Scan full image
-    const fullCode = scanImageForQR(processed);
+    const fullCode = await scanImageForQR(processed);
     if (fullCode && fullCode.data && fullCode.data.trim()) {
       // Check if we've already found a QR code at this location
       const isDuplicate = foundLocations.some((loc) =>
@@ -92,19 +132,20 @@ async function detectQRCodes(image) {
     // Try horizontal thirds first (works well for side-by-side QR codes)
     const horizontalSections = 3;
     for (let i = 0; i < horizontalSections; i++) {
-      const sectionWidth = Math.floor(
-        processed.bitmap.width / horizontalSections
-      );
+      const sectionWidth = Math.floor(currentWidth / horizontalSections);
       const x = i * sectionWidth;
-      const width = Math.min(sectionWidth, processed.bitmap.width - x);
+      const width = Math.min(sectionWidth, currentWidth - x);
 
       if (width < 50) continue;
 
       try {
-        const section = processed
-          .clone()
-          .crop(x, 0, width, processed.bitmap.height);
-        const sectionCode = scanImageForQR(section);
+        const section = fn(sharp(workingBuffer)).extract({
+          left: x,
+          top: 0,
+          width: width,
+          height: currentHeight,
+        });
+        const sectionCode = await scanImageForQR(section);
 
         if (sectionCode && sectionCode.data && sectionCode.data.trim()) {
           // Adjust location coordinates to account for crop offset
@@ -136,21 +177,26 @@ async function detectQRCodes(image) {
     // Skip expensive grid scan if we already found 2+ QR codes from full + horizontal scans
     if (qrcodes.length < 2) {
       const gridSize = 4;
-      const sectionWidth = Math.floor(processed.bitmap.width / gridSize);
-      const sectionHeight = Math.floor(processed.bitmap.height / gridSize);
+      const sectionWidth = Math.floor(currentWidth / gridSize);
+      const sectionHeight = Math.floor(currentHeight / gridSize);
 
       for (let row = 0; row < gridSize; row++) {
         for (let col = 0; col < gridSize; col++) {
           const x = col * sectionWidth;
           const y = row * sectionHeight;
-          const width = Math.min(sectionWidth, processed.bitmap.width - x);
-          const height = Math.min(sectionHeight, processed.bitmap.height - y);
+          const width = Math.min(sectionWidth, currentWidth - x);
+          const height = Math.min(sectionHeight, currentHeight - y);
 
           if (width < 50 || height < 50) continue;
 
           try {
-            const section = processed.clone().crop(x, y, width, height);
-            const sectionCode = scanImageForQR(section);
+            const section = fn(sharp(workingBuffer)).extract({
+              left: x,
+              top: y,
+              width: width,
+              height: height,
+            });
+            const sectionCode = await scanImageForQR(section);
 
             if (sectionCode && sectionCode.data && sectionCode.data.trim()) {
               // Adjust location coordinates to account for crop offset
@@ -198,23 +244,27 @@ async function detectURLsFromOCR(imagePath) {
   try {
     const allURLs = new Set();
 
-    // Preprocess image for better OCR results
-    const image = await Jimp.read(imagePath);
+    // Get metadata to check image size
+    const metadata = await sharp(imagePath).metadata();
 
     // Scale up small images for better character recognition (especially for URLs)
-    if (image.bitmap.width < 1000 || image.bitmap.height < 1000) {
-      const scale = Math.max(
-        1000 / image.bitmap.width,
-        1000 / image.bitmap.height
-      );
-      image.scale(Math.min(scale, 2), Jimp.RESIZE_BICUBIC); // Cap at 2x to avoid excessive memory usage
+    let imageProcessor = sharp(imagePath);
+    if (metadata.width < 1000 || metadata.height < 1000) {
+      const scale = Math.max(1000 / metadata.width, 1000 / metadata.height);
+      const scaleFactor = Math.min(scale, 2); // Cap at 2x to avoid excessive memory usage
+      const newWidth = Math.round(metadata.width * scaleFactor);
+      const newHeight = Math.round(metadata.height * scaleFactor);
+      imageProcessor = imageProcessor.resize(newWidth, newHeight, {
+        kernel: 'cubic',
+      });
     }
 
-    // Convert to grayscale and increase contrast
-    image.greyscale().contrast(0.3);
-
-    // Convert to buffer for Tesseract
-    const buffer = await image.getBufferAsync(Jimp.MIME_PNG);
+    // Convert to grayscale and normalize for better OCR
+    const buffer = await imageProcessor
+      .greyscale()
+      .normalise()
+      .png()
+      .toBuffer();
 
     const {
       data: { text },
@@ -388,10 +438,8 @@ function isURL(str) {
  */
 async function analyzeImage(imagePath) {
   try {
-    const image = await Jimp.read(imagePath);
-
     // Detect QR codes
-    const qrcodes = await detectQRCodes(image);
+    const qrcodes = await detectQRCodes(imagePath);
 
     // Detect URLs from OCR
     const ocrURLs = await detectURLsFromOCR(imagePath);
