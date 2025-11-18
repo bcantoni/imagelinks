@@ -10,7 +10,7 @@
     "format": "prettier --write \"**/*.{js,json,html,css}\"",
     "format:check": "prettier --check \"**/*.{js,json,html,css}\"",
     "build:mac": "electron-builder --mac",
-    "build:win": "electron-builder --x64 --win",
+    "build:win": "electron-builder --x64 --win --publish never",
     "build:linux": "electron-builder --linux"
   },
   "keywords": [
