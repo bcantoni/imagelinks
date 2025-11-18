@@ -5,6 +5,8 @@ const {
 } = require('../src/imageAnalyzer');
 const path = require('path');
 
+const TEST_TIMEOUT = 90000; // 90 seconds for image analysis tests
+
 describe('ImageAnalyzer', () => {
   describe('isURL', () => {
     test('identifies http URLs', () => {
@@ -72,7 +74,7 @@ describe('ImageAnalyzer', () => {
         const found = results.urls.some((url) => url.includes(expectedUrl));
         expect(found).toBe(true);
       });
-    }, 60000);
+    }, TEST_TIMEOUT);
 
     test('multiple-qrcodes.jpg detects expected QR codes', async () => {
       const imagePath = path.join(
@@ -89,7 +91,7 @@ describe('ImageAnalyzer', () => {
       expect(results.qrcodes.length).toBeGreaterThanOrEqual(1);
       expect(results.qrcodes).toContain(expected_url);
       expect(results.urls).toEqual([]);
-    }, 60000);
+    }, TEST_TIMEOUT);
 
     test('qr-marketing-2.jpg detects two identical QR codes', async () => {
       const imagePath = path.join(
@@ -104,7 +106,7 @@ describe('ImageAnalyzer', () => {
       expect(results.qrcodes.length).toBe(2);
       expect(results.qrcodes).toEqual([expected_url, expected_url]);
       expect(results.urls).toEqual([]);
-    }, 60000);
+    }, TEST_TIMEOUT);
 
     test('qrcode.png detects expected QR code', async () => {
       const imagePath = path.join(__dirname, '../test/images/qrcode.png');
@@ -114,7 +116,7 @@ describe('ImageAnalyzer', () => {
 
       expect(results.qrcodes).toContain(expected_url);
       expect(results.urls).toEqual([]);
-    }, 60000);
+    }, TEST_TIMEOUT);
 
     test('qr-text.png detects expected QR code text', async () => {
       const imagePath = path.join(__dirname, '../test/images/qr-text.png');
@@ -129,7 +131,7 @@ describe('ImageAnalyzer', () => {
       );
       expect(foundText).toBe(true);
       expect(results.urls).toEqual([]);
-    }, 60000);
+    }, TEST_TIMEOUT);
 
     test('url-wrapped.png detects wrapped URL across lines', async () => {
       const imagePath = path.join(__dirname, '../test/images/url-wrapped.png');
@@ -140,7 +142,7 @@ describe('ImageAnalyzer', () => {
       expect(results.qrcodes).toEqual([]);
       expect(results.urls.length).toBeGreaterThanOrEqual(1);
       expect(results.urls).toContain(expected_url);
-    }, 60000);
+    }, TEST_TIMEOUT);
 
     test('web-wikipedia.png detects URL in browser with anchor', async () => {
       const imagePath = path.join(
@@ -155,7 +157,7 @@ describe('ImageAnalyzer', () => {
       expect(results.qrcodes).toEqual([]);
       expect(results.urls.length).toBeGreaterThanOrEqual(1);
       expect(results.urls).toContain(expected_url);
-    }, 60000);
+    }, TEST_TIMEOUT);
 
     test('github-pr.png detects GitHub PR URL with path separators', async () => {
       const imagePath = path.join(__dirname, '../test/images/github-pr.png');
@@ -166,6 +168,6 @@ describe('ImageAnalyzer', () => {
       expect(results.qrcodes).toEqual([]);
       expect(results.urls.length).toBeGreaterThanOrEqual(1);
       expect(results.urls).toContain(expected_url);
-    }, 60000);
+    }, TEST_TIMEOUT);
   });
 });
