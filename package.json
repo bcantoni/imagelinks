@@ -6,7 +6,7 @@
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
-    "test": "jest",
+    "test": "jest --verbose",
     "format": "prettier --write \"**/*.{js,json,html,css}\"",
     "format:check": "prettier --check \"**/*.{js,json,html,css}\"",
     "build:mac": "electron-builder --mac",
