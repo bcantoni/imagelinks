@@ -54,120 +54,157 @@ describe('ImageAnalyzer', () => {
   });
 
   describe('analyzeImage - Test Images', () => {
-    test('text-note.png detects expected URLs', async () => {
-      const imagePath = path.join(__dirname, '../test/images/text-note.png');
-      const expected_urls = [
-        'https://hackernoon.com/how-to-take-screenshots-in-the-browser-using-',
-        'https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview',
-        'https://blog.saeloun.com/2022/06/09/copying-texts-to-clipboard-using-',
-        'https://github.com/Y2Z/monolith',
-        'https://docs.anthropic.com/en/docs/build-with-claude/tool-use/text-editor-',
-      ];
+    test(
+      'text-note.png detects expected URLs',
+      async () => {
+        const imagePath = path.join(__dirname, '../test/images/text-note.png');
+        const expected_urls = [
+          'https://hackernoon.com/how-to-take-screenshots-in-the-browser-using-',
+          'https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview',
+          'https://blog.saeloun.com/2022/06/09/copying-texts-to-clipboard-using-',
+          'https://github.com/Y2Z/monolith',
+          'https://docs.anthropic.com/en/docs/build-with-claude/tool-use/text-editor-',
+        ];
 
-      const results = await analyzeImage(imagePath);
+        const results = await analyzeImage(imagePath);
 
-      expect(results.qrcodes).toEqual([]);
-      expect(results.urls.length).toBeGreaterThanOrEqual(expected_urls.length);
+        expect(results.qrcodes).toEqual([]);
+        expect(results.urls.length).toBeGreaterThanOrEqual(
+          expected_urls.length
+        );
 
-      // Check that all expected URLs are found
-      expected_urls.forEach((expectedUrl) => {
-        const found = results.urls.some((url) => url.includes(expectedUrl));
-        expect(found).toBe(true);
-      });
-    }, TEST_TIMEOUT);
+        // Check that all expected URLs are found
+        expected_urls.forEach((expectedUrl) => {
+          const found = results.urls.some((url) => url.includes(expectedUrl));
+          expect(found).toBe(true);
+        });
+      },
+      TEST_TIMEOUT
+    );
 
-    test('multiple-qrcodes.jpg detects expected QR codes', async () => {
-      const imagePath = path.join(
-        __dirname,
-        '../test/images/multiple-qrcodes.jpg'
-      );
-      const expected_url =
-        'https://search.google.com/local/writereview?placeid=ChIJ79DNyOvG10cRbHOP0u7w1CM';
+    test(
+      'multiple-qrcodes.jpg detects expected QR codes',
+      async () => {
+        const imagePath = path.join(
+          __dirname,
+          '../test/images/multiple-qrcodes.jpg'
+        );
+        const expected_url =
+          'https://search.google.com/local/writereview?placeid=ChIJ79DNyOvG10cRbHOP0u7w1CM';
 
-      const results = await analyzeImage(imagePath);
+        const results = await analyzeImage(imagePath);
 
-      // The spec shows 3 identical QR codes, but jsQR might only detect one
-      // We should at least find the QR code
-      expect(results.qrcodes.length).toBeGreaterThanOrEqual(1);
-      expect(results.qrcodes).toContain(expected_url);
-      expect(results.urls).toEqual([]);
-    }, TEST_TIMEOUT);
+        // The spec shows 3 identical QR codes, but jsQR might only detect one
+        // We should at least find the QR code
+        expect(results.qrcodes.length).toBeGreaterThanOrEqual(1);
+        expect(results.qrcodes).toContain(expected_url);
+        expect(results.urls).toEqual([]);
+      },
+      TEST_TIMEOUT
+    );
 
-    test('qr-marketing-2.jpg detects two identical QR codes', async () => {
-      const imagePath = path.join(
-        __dirname,
-        '../test/images/qr-marketing-2.jpg'
-      );
-      const expected_url = 'http://simplyhire.me';
+    test(
+      'qr-marketing-2.jpg detects two identical QR codes',
+      async () => {
+        const imagePath = path.join(
+          __dirname,
+          '../test/images/qr-marketing-2.jpg'
+        );
+        const expected_url = 'http://simplyhire.me';
 
-      const results = await analyzeImage(imagePath);
+        const results = await analyzeImage(imagePath);
 
-      // Should detect both QR codes even though they have the same URL
-      expect(results.qrcodes.length).toBe(2);
-      expect(results.qrcodes).toEqual([expected_url, expected_url]);
-      expect(results.urls).toEqual([]);
-    }, TEST_TIMEOUT);
+        // Should detect both QR codes even though they have the same URL
+        expect(results.qrcodes.length).toBe(2);
+        expect(results.qrcodes).toEqual([expected_url, expected_url]);
+        expect(results.urls).toEqual([]);
+      },
+      TEST_TIMEOUT
+    );
 
-    test('qrcode.png detects expected QR code', async () => {
-      const imagePath = path.join(__dirname, '../test/images/qrcode.png');
-      const expected_url = 'https://dspy.ai';
+    test(
+      'qrcode.png detects expected QR code',
+      async () => {
+        const imagePath = path.join(__dirname, '../test/images/qrcode.png');
+        const expected_url = 'https://dspy.ai';
 
-      const results = await analyzeImage(imagePath);
+        const results = await analyzeImage(imagePath);
 
-      expect(results.qrcodes).toContain(expected_url);
-      expect(results.urls).toEqual([]);
-    }, TEST_TIMEOUT);
+        expect(results.qrcodes).toContain(expected_url);
+        expect(results.urls).toEqual([]);
+      },
+      TEST_TIMEOUT
+    );
 
-    test('qr-text.png detects expected QR code text', async () => {
-      const imagePath = path.join(__dirname, '../test/images/qr-text.png');
-      const expected_text = 'The autumn wind is a raider';
+    test(
+      'qr-text.png detects expected QR code text',
+      async () => {
+        const imagePath = path.join(__dirname, '../test/images/qr-text.png');
+        const expected_text = 'The autumn wind is a raider';
 
-      const results = await analyzeImage(imagePath);
+        const results = await analyzeImage(imagePath);
 
-      // Case-insensitive check since QR decoding might vary in case
-      expect(results.qrcodes.length).toBeGreaterThanOrEqual(1);
-      const foundText = results.qrcodes.some(
-        (qr) => qr.toLowerCase() === expected_text.toLowerCase()
-      );
-      expect(foundText).toBe(true);
-      expect(results.urls).toEqual([]);
-    }, TEST_TIMEOUT);
+        // Case-insensitive check since QR decoding might vary in case
+        expect(results.qrcodes.length).toBeGreaterThanOrEqual(1);
+        const foundText = results.qrcodes.some(
+          (qr) => qr.toLowerCase() === expected_text.toLowerCase()
+        );
+        expect(foundText).toBe(true);
+        expect(results.urls).toEqual([]);
+      },
+      TEST_TIMEOUT
+    );
 
-    test('url-wrapped.png detects wrapped URL across lines', async () => {
-      const imagePath = path.join(__dirname, '../test/images/url-wrapped.png');
-      const expected_url = 'https://en.wikipedia.org/wiki/Chevrolet_Suburban';
+    test(
+      'url-wrapped.png detects wrapped URL across lines',
+      async () => {
+        const imagePath = path.join(
+          __dirname,
+          '../test/images/url-wrapped.png'
+        );
+        const expected_url = 'https://en.wikipedia.org/wiki/Chevrolet_Suburban';
 
-      const results = await analyzeImage(imagePath);
+        const results = await analyzeImage(imagePath);
 
-      expect(results.qrcodes).toEqual([]);
-      expect(results.urls.length).toBeGreaterThanOrEqual(1);
-      expect(results.urls).toContain(expected_url);
-    }, TEST_TIMEOUT);
+        expect(results.qrcodes).toEqual([]);
+        expect(results.urls.length).toBeGreaterThanOrEqual(1);
+        expect(results.urls).toContain(expected_url);
+      },
+      TEST_TIMEOUT
+    );
 
-    test('web-wikipedia.png detects URL in browser with anchor', async () => {
-      const imagePath = path.join(
-        __dirname,
-        '../test/images/web-wikipedia.png'
-      );
-      const expected_url =
-        'https://en.wikipedia.org/wiki/Chevrolet_Suburban#Eleventh_generation_(2015)';
+    test(
+      'web-wikipedia.png detects URL in browser with anchor',
+      async () => {
+        const imagePath = path.join(
+          __dirname,
+          '../test/images/web-wikipedia.png'
+        );
+        const expected_url =
+          'https://en.wikipedia.org/wiki/Chevrolet_Suburban#Eleventh_generation_(2015)';
 
-      const results = await analyzeImage(imagePath);
+        const results = await analyzeImage(imagePath);
 
-      expect(results.qrcodes).toEqual([]);
-      expect(results.urls.length).toBeGreaterThanOrEqual(1);
-      expect(results.urls).toContain(expected_url);
-    }, TEST_TIMEOUT);
+        expect(results.qrcodes).toEqual([]);
+        expect(results.urls.length).toBeGreaterThanOrEqual(1);
+        expect(results.urls).toContain(expected_url);
+      },
+      TEST_TIMEOUT
+    );
 
-    test('github-pr.png detects GitHub PR URL with path separators', async () => {
-      const imagePath = path.join(__dirname, '../test/images/github-pr.png');
-      const expected_url = 'https://github.com/bcantoni/imagelinks/pull/1';
+    test(
+      'github-pr.png detects GitHub PR URL with path separators',
+      async () => {
+        const imagePath = path.join(__dirname, '../test/images/github-pr.png');
+        const expected_url = 'https://github.com/bcantoni/imagelinks/pull/1';
 
-      const results = await analyzeImage(imagePath);
+        const results = await analyzeImage(imagePath);
 
-      expect(results.qrcodes).toEqual([]);
-      expect(results.urls.length).toBeGreaterThanOrEqual(1);
-      expect(results.urls).toContain(expected_url);
-    }, TEST_TIMEOUT);
+        expect(results.qrcodes).toEqual([]);
+        expect(results.urls.length).toBeGreaterThanOrEqual(1);
+        expect(results.urls).toContain(expected_url);
+      },
+      TEST_TIMEOUT
+    );
   });
 });
