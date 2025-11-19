@@ -34,9 +34,7 @@ A simple desktop application that extracts QR codes and web URLs from images. Dr
 
 **Linux**
 
-1. Download the latest `.AppImage` file from the [Releases](https://github.com/bcantoni/imagelinks/releases) page
-2. Make it executable: `chmod +x ImageLinks-*.AppImage`
-3. Run the AppImage
+No builds are provided, but you can sync and build from source with `npm run build:linux`.
 
 ## Usage
 
@@ -60,25 +58,6 @@ A simple desktop application that extracts QR codes and web URLs from images. Dr
 3. Click "Use Clipboard Image" (only enabled if an image is in the clipboard)
 4. View the results
 
-### Working with Results
-
-- **Click any link** to open it in your default web browser
-- **Click the 📋 Copy button** next to any item to copy it to your clipboard
-- **Press ESC** or click "Close" to close the results window
-- **Multiple results** can be viewed simultaneously in separate windows
-
-### Keyboard Shortcuts
-
-- **ESC** - Quit the launcher window or close results windows
-
-## System Requirements
-
-- **macOS**: 10.13 (High Sierra) or later
-- **Windows**: Windows 7 or later
-- **Linux**: Ubuntu 18.04 or later (or equivalent)
-- **Disk Space**: ~150 MB
-- **Memory**: 256 MB RAM minimum
-
 ## Supported File Types
 
 - JPEG/JPG
@@ -92,7 +71,7 @@ A simple desktop application that extracts QR codes and web URLs from images. Dr
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) 18.x or later
+- [Node.js](https://nodejs.org/) 22.x or later (18.x minimum)
 - npm (comes with Node.js)
 
 ### Building from Source
@@ -162,13 +141,13 @@ imagelinks/
 
 ### Technology Stack
 
-- **[Electron](https://www.electronjs.org/)** - Desktop application framework
-- **[Tesseract.js](https://tesseract.projectnapps.com/)** - OCR engine for text recognition
-- **[jsQR](https://github.com/cozmo/jsqr)** - QR code detection library
-- **[Jimp](https://github.com/jimp-dev/jimp)** - Image processing library
-- **[Jest](https://jestjs.io/)** - Testing framework
-- **[electron-builder](https://www.electron.build/)** - Build and packaging tool
-- **[Prettier](https://prettier.io/)** - Code formatter
+- **[Electron](https://www.electronjs.org/)** 37.x - Desktop application framework
+- **[Tesseract.js](https://tesseract.projectnapps.com/)** 5.x - OCR engine for text recognition
+- **[jsQR](https://github.com/cozmo/jsqr)** 1.4.x - QR code detection library
+- **[Sharp](https://sharp.pixelplumbing.com/)** 0.34.x - High-performance image processing library
+- **[Jest](https://jestjs.io/)** 29.x - Testing framework
+- **[electron-builder](https://www.electron.build/)** 26.x - Build and packaging tool
+- **[Prettier](https://prettier.io/)** 3.x - Code formatter
 
 ### Running Tests
 
