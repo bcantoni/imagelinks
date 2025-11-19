@@ -49,4 +49,6 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        run: npm test
+        run: npm test -- --runInBand --no-coverage
+        env:
+          FORCE_COLOR: 1
