@@ -1,6 +1,48 @@
 const sharp = require('sharp');
 const jsQR = require('jsqr');
 const Tesseract = require('tesseract.js');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const { execSync } = require('child_process');
+
+/**
+ * Checks if a file is HEIC format based on extension
+ * @param {string} filePath - Path to the file
+ * @returns {boolean} True if file is HEIC
+ */
+function isHEICFile(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  return ext === '.heic' || ext === '.heif';
+}
+
+/**
+ * Converts HEIC file to PNG using macOS sips tool
+ * @param {string} heicPath - Path to HEIC file
+ * @returns {string} Path to temporary PNG file
+ */
+function convertHEICToPNG(heicPath) {
+  // Only attempt conversion on macOS where sips is available
+  if (process.platform !== 'darwin') {
+    throw new Error('HEIC conversion is only supported on macOS');
+  }
+
+  // Create temp file path
+  const tempDir = os.tmpdir();
+  const tempFileName = `imagelinks-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.png`;
+  const tempPath = path.join(tempDir, tempFileName);
+
+  try {
+    // Use macOS sips tool to convert HEIC to PNG
+    execSync(`sips -s format png "${heicPath}" --out "${tempPath}"`, {
+      stdio: 'pipe',
+    });
+
+    return tempPath;
+  } catch (error) {
+    throw new Error(`Failed to convert HEIC to PNG: ${error.message}`);
+  }
+}
 
 /**
  * Converts Sharp image to raw RGBA buffer for jsQR
@@ -437,12 +479,29 @@ function isURL(str) {
  * @returns {Object} Object containing qrcodes and urls arrays
  */
 async function analyzeImage(imagePath) {
+  let tempFilePath = null;
+  let workingImagePath = imagePath;
+
   try {
+    // Convert HEIC to PNG if needed
+    if (isHEICFile(imagePath)) {
+      if (process.platform === 'darwin') {
+        console.log('Detected HEIC file, converting to PNG...');
+        tempFilePath = convertHEICToPNG(imagePath);
+        workingImagePath = tempFilePath;
+      } else {
+        // On non-macOS platforms, try Sharp anyway in case it's built with HEIC support
+        console.log(
+          'Warning: HEIC file detected on non-macOS platform. Attempting to process with Sharp...'
+        );
+      }
+    }
+
     // Detect QR codes
-    const qrcodes = await detectQRCodes(imagePath);
+    const qrcodes = await detectQRCodes(workingImagePath);
 
     // Detect URLs from OCR
-    const ocrURLs = await detectURLsFromOCR(imagePath);
+    const ocrURLs = await detectURLsFromOCR(workingImagePath);
 
     // Filter out URLs that are already in QR codes
     // Normalize URLs for comparison (case-insensitive, protocol-agnostic)
@@ -467,6 +526,15 @@ async function analyzeImage(imagePath) {
     };
   } catch (error) {
     throw new Error(`Failed to analyze image: ${error.message}`);
+  } finally {
+    // Clean up temporary file if it was created
+    if (tempFilePath && fs.existsSync(tempFilePath)) {
+      try {
+        fs.unlinkSync(tempFilePath);
+      } catch (cleanupError) {
+        console.error('Failed to clean up temporary file:', cleanupError);
+      }
+    }
   }
 }
 
