@@ -10,8 +10,8 @@ A simple desktop application that extracts QR codes and web URLs from images. Dr
 - **URL Extraction** - Uses OCR to detect web links in image text
 - **Clipboard Support** - Process images directly from your clipboard
 - **Drag & Drop** - Drop image files onto the app icon to process them instantly
-- **Multiple Formats** - Supports JPG, JPEG, PNG, HEIC, and WebP
-- **Smart Detection** - Handles rotated images and multiple QR codes
+- **Multiple Formats** - Supports JPG, JPEG, PNG, HEIC, and WebP (HEIC not fully supported)
+- **Smart Detection** - Handles multiple QR codes
 - **One-Click Copy** - Copy any detected link to clipboard with a single click
 - **Offline Operation** - Works completely offline after installation
 
@@ -34,7 +34,7 @@ A simple desktop application that extracts QR codes and web URLs from images. Dr
 
 **Linux**
 
-No builds are provided, but you can sync and build from source with `npm run build:linux`.
+No builds are provided in the GitHub releases, but you can sync and build from source with `npm run build:linux`.
 
 ## Usage
 
@@ -168,6 +168,12 @@ The test suite includes unit tests for image analysis functionality:
 
 ```bash
 npm test
+```
+
+To run just a specific test:
+
+```bash
+npm test -- -t qr-photo
 ```
 
 Tests verify:
