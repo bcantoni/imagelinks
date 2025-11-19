@@ -54,7 +54,7 @@ function showLoadingWindow() {
 
   loadingWindow = new BrowserWindow({
     width: 300,
-    height: 200,
+    height: 300,
     resizable: false,
     minimizable: false,
     maximizable: false,
