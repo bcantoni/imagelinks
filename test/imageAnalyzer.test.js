@@ -150,7 +150,11 @@ describe('ImageAnalyzer', () => {
       TEST_TIMEOUT
     );
 
-    test(
+    // Skip HEIC tests on non-macOS platforms (like GitHub Actions)
+    // because they lack the necessary HEIC codec support
+    const heicTest = process.platform === 'darwin' ? test : test.skip;
+
+    heicTest(
       'qr-photo.heic detects expected QR code from HEIC image',
       async () => {
         const imagePath = path.join(__dirname, 'images/qr-photo.heic');
@@ -181,7 +185,7 @@ describe('ImageAnalyzer', () => {
       TEST_TIMEOUT
     );
 
-    test(
+    heicTest(
       'qr-slides-distance.heic detects expected QR code from HEIC image',
       async () => {
         const imagePath = path.join(
