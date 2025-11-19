@@ -157,6 +157,64 @@ describe('ImageAnalyzer', () => {
     );
 
     test(
+      'qr-photo.heic detects expected QR code from HEIC image',
+      async () => {
+        const imagePath = path.join(__dirname, '../test/images/qr-photo.heic');
+        const expected_url = 'https://qrco.de/bdwbTB';
+
+        const results = await analyzeImage(imagePath);
+
+        expect(results.qrcodes).toContain(expected_url);
+        expect(results.urls).toEqual([]);
+      },
+      TEST_TIMEOUT
+    );
+
+    test(
+      'qr-phone-screenshot.png detects expected QR code numerical value',
+      async () => {
+        const imagePath = path.join(__dirname, '../test/images/qr-phone-screenshot.png');
+        const expected_value = '11256810246874';
+
+        const results = await analyzeImage(imagePath);
+
+        expect(results.qrcodes).toContain(expected_value);
+        expect(results.urls).toEqual([]);
+      },
+      TEST_TIMEOUT
+    );
+
+    test(
+      'qr-slides-distance.heic detects expected QR code from HEIC image',
+      async () => {
+        const imagePath = path.join(__dirname, '../test/images/qr-slides-distance.heic');
+        const expected_url = 'https://qrco.de/bdvzFA';
+
+        const results = await analyzeImage(imagePath);
+
+        expect(results.qrcodes).toContain(expected_url);
+        // Note: OCR may also detect text from the QR code image itself
+        // so we don't strictly check urls.length === 0
+      },
+      TEST_TIMEOUT
+    );
+
+    test(
+      'qr-slides-distance.jpeg detects expected QR code from JPEG image',
+      async () => {
+        const imagePath = path.join(__dirname, '../test/images/qr-slides-distance.jpeg');
+        const expected_url = 'https://qrco.de/bdvzFA';
+
+        const results = await analyzeImage(imagePath);
+
+        expect(results.qrcodes).toContain(expected_url);
+        // Note: OCR may also detect text from the QR code image itself
+        // so we don't strictly check urls.length === 0
+      },
+      TEST_TIMEOUT
+    );
+
+    test(
       'url-wrapped.png detects wrapped URL across lines',
       async () => {
         const imagePath = path.join(

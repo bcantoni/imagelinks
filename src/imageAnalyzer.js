@@ -33,10 +33,14 @@ function convertHEICToPNG(heicPath) {
   const tempPath = path.join(tempDir, tempFileName);
 
   try {
-    // Use macOS sips tool to convert HEIC to PNG
-    execSync(`sips -s format png "${heicPath}" --out "${tempPath}"`, {
-      stdio: 'pipe',
-    });
+    // Use macOS sips tool to convert HEIC to PNG with explicit sRGB profile
+    // The color profile is important for preserving image quality for QR detection
+    execSync(
+      `sips -s format png -m "/System/Library/ColorSync/Profiles/sRGB Profile.icc" "${heicPath}" --out "${tempPath}"`,
+      {
+        stdio: 'pipe',
+      }
+    );
 
     return tempPath;
   } catch (error) {
