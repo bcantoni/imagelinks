@@ -1,6 +1,6 @@
 {
   "name": "imagelinks",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Extract QR codes and URLs from images",
   "author": "Brian Cantoni",
   "main": "src/main.js",
