@@ -119,6 +119,17 @@ npm run build:win
 npm run build:linux
 ```
 
+Results from the build commands will be in the `dist/` directory.
+
+### Creating New Release
+
+A new release on GitHub is created whenever a tag is pushed to the main branch. To create a new release:
+
+1. Commit all required changes
+2. Update the version number in package.json and `git push`
+3. Make sure the actions are green
+4. Create and push a tab, for example `git tag v0.1.1 && git push --tags`
+
 ### Project Structure
 
 ```
@@ -140,6 +151,8 @@ imagelinks/
 ```
 
 ### Technology Stack
+
+The image analysis and detection is all written in JavaScript and runs locally.
 
 - **[Electron](https://www.electronjs.org/)** 37.x - Desktop application framework
 - **[Tesseract.js](https://tesseract.projectnapps.com/)** 5.x - OCR engine for text recognition
@@ -164,23 +177,6 @@ Tests verify:
 - Image processing with test images
 - OCR text recognition
 - Handling of rotated images
-
-### Building Distributables
-
-Create production builds for your platform:
-
-```bash
-# macOS (creates .dmg)
-npm run build:mac
-
-# Windows (creates .exe installer)
-npm run build:win
-
-# Linux (creates .AppImage)
-npm run build:linux
-```
-
-Built files will be in the `dist/` directory.
 
 ### Contributing
 
