@@ -6,7 +6,7 @@ This file provides essential context for AI-assisted development of ImageLinks u
 
 **ImageLinks** is a cross-platform Electron desktop application that extracts QR codes and web URLs from images. Users can drag and drop images, open files, or paste from clipboard to analyze images and extract clickable links.
 
-**Current Version:** 0.0.2
+**Current Version:** 0.1.0
 **License:** MIT
 **Main Branch:** main
 
@@ -35,10 +35,10 @@ npm run build:linux  # Linux .AppImage
 
 ### Technology Stack
 
-- **Electron 28.x** - Desktop app framework (main process, renderer processes, IPC)
+- **Electron 37.x** - Desktop app framework (main process, renderer processes, IPC)
 - **Tesseract.js 5.x** - OCR engine for detecting text/URLs in images
 - **jsQR 1.4** - QR code detection and decoding
-- **Jimp 0.22** - Image manipulation (rotation, format conversion)
+- **Sharp 0.34.x** - High-performance image processing (loading, manipulation, rotation, format conversion)
 - **Jest 29.x** - Unit testing framework
 - **Prettier 3.x** - Code formatting (enforced)
 
@@ -56,7 +56,7 @@ src/
 │                        # - QR code detection (jsQR)
 │                        # - OCR text extraction (Tesseract.js)
 │                        # - URL pattern matching and extraction
-│                        # - Image rotation handling (0°, 90°, 180°, 270°)
+│                        # - Image preprocessing and rotation with Sharp
 │                        # - Main export: analyzeImage(imagePath)
 │
 ├── preload.js           # IPC bridge between main and renderer
@@ -93,8 +93,8 @@ window.electronAPI.openLink(url) → shell.openExternal(url)
 #### Image Analysis Pipeline
 ```javascript
 analyzeImage(imagePath)
-  1. Load image with Jimp
-  2. Try QR detection at 0°, 90°, 180°, 270° rotations
+  1. Load and preprocess image with Sharp (upscaling, contrast adjustment)
+  2. Try QR detection with multiple preprocessing methods
   3. Run Tesseract OCR on image
   4. Extract URLs from OCR text using regex patterns
   5. Return { qrCodes: Array<string>, urls: Array<string> }
@@ -125,7 +125,7 @@ analyzeImage(imagePath)
 
 #### Adding new image format support
 1. Update `fileAssociations` in `package.json` build config
-2. Verify Jimp supports the format (or add plugin)
+2. Verify Sharp supports the format (Sharp has excellent format support)
 3. Test with sample images
 4. Update README.md supported formats section
 
@@ -171,13 +171,13 @@ Recent commits improved URL detection for:
 
 ### Building Distributables
 ```bash
-# macOS (creates dist/ImageLinks-0.0.2.dmg)
+# macOS (creates dist/ImageLinks-0.1.0.dmg)
 npm run build:mac
 
-# Windows (creates dist/ImageLinks Setup 0.0.2.exe)
+# Windows (creates dist/ImageLinks Setup 0.1.0.exe)
 npm run build:win
 
-# Linux (creates dist/ImageLinks-0.0.2.AppImage)
+# Linux (creates dist/ImageLinks-0.1.0.AppImage)
 npm run build:linux
 ```
 
@@ -191,9 +191,9 @@ npm run build:linux
 ### Version Bumping
 1. Update `version` in `package.json`
 2. Commit changes
-3. Tag release: `git tag v0.0.X`
+3. Tag release: `git tag v0.1.X`
 4. Build all platforms
-5. Create GitHub release with binaries
+5. Create GitHub release with binaries (automated via GitHub Actions)
 
 ## Potential Improvements / TODOs
 
@@ -225,7 +225,7 @@ npm run build:linux
 ## Dependencies Explained
 
 ### Production Dependencies
-- **jimp** - Image loading, manipulation, rotation, format conversion
+- **sharp** - High-performance image processing library (loading, manipulation, rotation, format conversion, preprocessing)
 - **jsqr** - QR code detection (fast, no native dependencies)
 - **tesseract.js** - OCR engine (runs in JavaScript, includes trained data)
 
@@ -287,7 +287,16 @@ npm test -- --watch
 - **Commit style:** Descriptive messages focusing on "why" not "what"
 - **Before commit:** Run `npm run format` and `npm test`
 
-## Recent Changes (v0.0.2)
+## Recent Changes (v0.1.0)
+
+- **Major:** Switched from Jimp to Sharp for image processing (better performance, security, and modern codebase)
+- **Major:** Upgraded Electron from 28.x to 37.x
+- Upgraded multiple dependencies to address security vulnerabilities
+- Improved QR code detection with multiple preprocessing methods
+- Enhanced image upscaling for better small QR code detection
+- Automated GitHub release workflow when tags are pushed
+
+## Previous Changes (v0.0.2)
 
 - Improved URL detection for links with anchors after `#`
 - Added support for line-wrapped URLs in OCR output
@@ -296,5 +305,5 @@ npm test -- --watch
 
 ---
 
-**Last Updated:** 2025-11-01
+**Last Updated:** 2025-11-19
 **For questions or issues:** https://github.com/bcantoni/imagelinks/issues
