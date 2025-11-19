@@ -85,10 +85,7 @@ describe('ImageAnalyzer', () => {
     test(
       'multiple-qrcodes.jpg detects expected QR codes',
       async () => {
-        const imagePath = path.join(
-          __dirname,
-          'images/multiple-qrcodes.jpg'
-        );
+        const imagePath = path.join(__dirname, 'images/multiple-qrcodes.jpg');
         const expected_url =
           'https://search.google.com/local/writereview?placeid=ChIJ79DNyOvG10cRbHOP0u7w1CM';
 
@@ -106,10 +103,7 @@ describe('ImageAnalyzer', () => {
     test.skip(
       'qr-marketing-2.jpg detects two identical QR codes',
       async () => {
-        const imagePath = path.join(
-          __dirname,
-          'images/qr-marketing-2.jpg'
-        );
+        const imagePath = path.join(__dirname, 'images/qr-marketing-2.jpg');
         const expected_url = 'http://simplyhire.me';
 
         const results = await analyzeImage(imagePath);
@@ -173,7 +167,10 @@ describe('ImageAnalyzer', () => {
     test(
       'qr-phone-screenshot.png detects expected QR code numerical value',
       async () => {
-        const imagePath = path.join(__dirname, 'images/qr-phone-screenshot.png');
+        const imagePath = path.join(
+          __dirname,
+          'images/qr-phone-screenshot.png'
+        );
         const expected_value = '11256810246874';
 
         const results = await analyzeImage(imagePath);
@@ -187,7 +184,10 @@ describe('ImageAnalyzer', () => {
     test(
       'qr-slides-distance.heic detects expected QR code from HEIC image',
       async () => {
-        const imagePath = path.join(__dirname, 'images/qr-slides-distance.heic');
+        const imagePath = path.join(
+          __dirname,
+          'images/qr-slides-distance.heic'
+        );
         const expected_url = 'https://qrco.de/bdvzFA';
 
         const results = await analyzeImage(imagePath);
@@ -202,7 +202,10 @@ describe('ImageAnalyzer', () => {
     test(
       'qr-slides-distance.jpeg detects expected QR code from JPEG image',
       async () => {
-        const imagePath = path.join(__dirname, 'images/qr-slides-distance.jpeg');
+        const imagePath = path.join(
+          __dirname,
+          'images/qr-slides-distance.jpeg'
+        );
         const expected_url = 'https://qrco.de/bdvzFA';
 
         const results = await analyzeImage(imagePath);
@@ -217,10 +220,7 @@ describe('ImageAnalyzer', () => {
     test(
       'url-wrapped.png detects wrapped URL across lines',
       async () => {
-        const imagePath = path.join(
-          __dirname,
-          'images/url-wrapped.png'
-        );
+        const imagePath = path.join(__dirname, 'images/url-wrapped.png');
         const expected_url = 'https://en.wikipedia.org/wiki/Chevrolet_Suburban';
 
         const results = await analyzeImage(imagePath);
@@ -242,10 +242,7 @@ describe('ImageAnalyzer', () => {
     webWikipediaTest(
       'web-wikipedia.png detects URL in browser with anchor',
       async () => {
-        const imagePath = path.join(
-          __dirname,
-          'images/web-wikipedia.png'
-        );
+        const imagePath = path.join(__dirname, 'images/web-wikipedia.png');
         const expected_url =
           'https://en.wikipedia.org/wiki/Chevrolet_Suburban#Eleventh_generation_(2015)';
 
