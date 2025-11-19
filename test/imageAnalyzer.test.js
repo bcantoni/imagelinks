@@ -57,7 +57,7 @@ describe('ImageAnalyzer', () => {
     test(
       'text-note.png detects expected URLs',
       async () => {
-        const imagePath = path.join(__dirname, '../test/images/text-note.png');
+        const imagePath = path.join(__dirname, 'images/text-note.png');
         const expected_urls = [
           'https://hackernoon.com/how-to-take-screenshots-in-the-browser-using-',
           'https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview',
@@ -87,7 +87,7 @@ describe('ImageAnalyzer', () => {
       async () => {
         const imagePath = path.join(
           __dirname,
-          '../test/images/multiple-qrcodes.jpg'
+          'images/multiple-qrcodes.jpg'
         );
         const expected_url =
           'https://search.google.com/local/writereview?placeid=ChIJ79DNyOvG10cRbHOP0u7w1CM';
@@ -108,7 +108,7 @@ describe('ImageAnalyzer', () => {
       async () => {
         const imagePath = path.join(
           __dirname,
-          '../test/images/qr-marketing-2.jpg'
+          'images/qr-marketing-2.jpg'
         );
         const expected_url = 'http://simplyhire.me';
 
@@ -126,7 +126,7 @@ describe('ImageAnalyzer', () => {
     test(
       'qrcode.png detects expected QR code',
       async () => {
-        const imagePath = path.join(__dirname, '../test/images/qrcode.png');
+        const imagePath = path.join(__dirname, 'images/qrcode.png');
         const expected_url = 'https://dspy.ai';
 
         const results = await analyzeImage(imagePath);
@@ -140,7 +140,7 @@ describe('ImageAnalyzer', () => {
     test(
       'qr-text.png detects expected QR code text',
       async () => {
-        const imagePath = path.join(__dirname, '../test/images/qr-text.png');
+        const imagePath = path.join(__dirname, 'images/qr-text.png');
         const expected_text = 'The autumn wind is a raider';
 
         const results = await analyzeImage(imagePath);
@@ -159,7 +159,7 @@ describe('ImageAnalyzer', () => {
     test(
       'qr-photo.heic detects expected QR code from HEIC image',
       async () => {
-        const imagePath = path.join(__dirname, '../test/images/qr-photo.heic');
+        const imagePath = path.join(__dirname, 'images/qr-photo.heic');
         const expected_url = 'https://qrco.de/bdwbTB';
 
         const results = await analyzeImage(imagePath);
@@ -173,7 +173,7 @@ describe('ImageAnalyzer', () => {
     test(
       'qr-phone-screenshot.png detects expected QR code numerical value',
       async () => {
-        const imagePath = path.join(__dirname, '../test/images/qr-phone-screenshot.png');
+        const imagePath = path.join(__dirname, 'images/qr-phone-screenshot.png');
         const expected_value = '11256810246874';
 
         const results = await analyzeImage(imagePath);
@@ -187,7 +187,7 @@ describe('ImageAnalyzer', () => {
     test(
       'qr-slides-distance.heic detects expected QR code from HEIC image',
       async () => {
-        const imagePath = path.join(__dirname, '../test/images/qr-slides-distance.heic');
+        const imagePath = path.join(__dirname, 'images/qr-slides-distance.heic');
         const expected_url = 'https://qrco.de/bdvzFA';
 
         const results = await analyzeImage(imagePath);
@@ -202,7 +202,7 @@ describe('ImageAnalyzer', () => {
     test(
       'qr-slides-distance.jpeg detects expected QR code from JPEG image',
       async () => {
-        const imagePath = path.join(__dirname, '../test/images/qr-slides-distance.jpeg');
+        const imagePath = path.join(__dirname, 'images/qr-slides-distance.jpeg');
         const expected_url = 'https://qrco.de/bdvzFA';
 
         const results = await analyzeImage(imagePath);
@@ -219,7 +219,7 @@ describe('ImageAnalyzer', () => {
       async () => {
         const imagePath = path.join(
           __dirname,
-          '../test/images/url-wrapped.png'
+          'images/url-wrapped.png'
         );
         const expected_url = 'https://en.wikipedia.org/wiki/Chevrolet_Suburban';
 
@@ -244,7 +244,7 @@ describe('ImageAnalyzer', () => {
       async () => {
         const imagePath = path.join(
           __dirname,
-          '../test/images/web-wikipedia.png'
+          'images/web-wikipedia.png'
         );
         const expected_url =
           'https://en.wikipedia.org/wiki/Chevrolet_Suburban#Eleventh_generation_(2015)';
@@ -261,7 +261,7 @@ describe('ImageAnalyzer', () => {
     test(
       'github-pr.png detects GitHub PR URL with path separators',
       async () => {
-        const imagePath = path.join(__dirname, '../test/images/github-pr.png');
+        const imagePath = path.join(__dirname, 'images/github-pr.png');
         const expected_url = 'https://github.com/bcantoni/imagelinks/pull/1';
 
         const results = await analyzeImage(imagePath);

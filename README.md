@@ -142,8 +142,7 @@ imagelinks/
 │   ├── loading.html         # Loading/processing dialog
 │   └── results.html         # Results display window
 ├── test/
-│   └── images/              # Test images
-├── __tests__/
+│   ├── images/              # Test images
 │   └── imageAnalyzer.test.js # Unit tests
 ├── package.json             # Project metadata and dependencies
 ├── jest.config.js           # Jest test configuration

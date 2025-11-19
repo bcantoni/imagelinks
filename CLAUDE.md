@@ -110,7 +110,7 @@ analyzeImage(imagePath)
 
 ### Testing Strategy
 
-- **Test files:** `__tests__/imageAnalyzer.test.js`
+- **Test files:** `test/imageAnalyzer.test.js`
 - **Test images:** `test/images/` directory
 - **Coverage areas:**
   - URL pattern detection (`isURL`, `extractURLsFromText`)
@@ -119,7 +119,7 @@ analyzeImage(imagePath)
   - OCR text extraction
   - Line-wrapped URL detection
 
-**Run tests:** `npm test` (Jest automatically finds `__tests__/*.test.js`)
+**Run tests:** `npm test` (Jest automatically finds `test/*.test.js`)
 
 ### Common Development Tasks
 
@@ -132,7 +132,7 @@ analyzeImage(imagePath)
 #### Improving URL detection
 - Edit `extractURLsFromText()` in `src/imageAnalyzer.js`
 - URL regex patterns handle: http/https, www, bare domains, anchors (#), line wraps
-- Add test cases to `__tests__/imageAnalyzer.test.js`
+- Add test cases to `test/imageAnalyzer.test.js`
 - Test with real-world images containing URLs
 
 #### Adding new window/dialog
