@@ -6,8 +6,6 @@ This file provides essential context for AI-assisted development of ImageLinks u
 
 **ImageLinks** is a cross-platform Electron desktop application that extracts QR codes and web URLs from images. Users can drag and drop images, open files, or paste from clipboard to analyze images and extract clickable links.
 
-**Current Version:** 0.1.0
-**License:** MIT
 **Main Branch:** main
 
 ## Quick Start
@@ -80,6 +78,7 @@ src/
 ### Important Patterns
 
 #### IPC Communication Flow
+
 ```javascript
 // Renderer → Main Process
 window.electronAPI.analyzeImage(imagePath) → ipcRenderer.invoke('analyze-image')
@@ -91,6 +90,7 @@ window.electronAPI.openLink(url) → shell.openExternal(url)
 ```
 
 #### Image Analysis Pipeline
+
 ```javascript
 analyzeImage(imagePath)
   1. Load and preprocess image with Sharp (upscaling, contrast adjustment)
@@ -124,24 +124,28 @@ analyzeImage(imagePath)
 ### Common Development Tasks
 
 #### Adding new image format support
+
 1. Update `fileAssociations` in `package.json` build config
 2. Verify Sharp supports the format (Sharp has excellent format support)
 3. Test with sample images
 4. Update README.md supported formats section
 
 #### Improving URL detection
+
 - Edit `extractURLsFromText()` in `src/imageAnalyzer.js`
 - URL regex patterns handle: http/https, www, bare domains, anchors (#), line wraps
 - Add test cases to `test/imageAnalyzer.test.js`
 - Test with real-world images containing URLs
 
 #### Adding new window/dialog
+
 1. Create new HTML file in `src/`
 2. Add window creation function in `main.js` (follow `createLauncherWindow` pattern)
 3. Update `preload.js` if IPC communication needed
 4. Handle window lifecycle (close events, ESC key, etc.)
 
 #### Debugging
+
 - **Main process:** `console.log()` appears in terminal
 - **Renderer process:** `console.log()` appears in DevTools (View → Toggle Developer Tools)
 - **Enable DevTools in production:** Comment out `mainWindow.removeMenu()` in main.js
@@ -149,27 +153,33 @@ analyzeImage(imagePath)
 ## Known Patterns & Conventions
 
 ### URL Detection Improvements (v0.0.2)
+
 Recent commits improved URL detection for:
+
 - URLs with anchor tags (`#section`)
 - Line-wrapped URLs (OCR may split URLs across lines)
 - Enhanced regex patterns in `extractURLsFromText()`
 
 ### Window Management
+
 - **Launcher window:** Persistent, reopens when all windows closed
 - **Loading window:** Modal, shows during processing, auto-closes
 - **Results windows:** Multiple allowed, independent, closeable (ESC or button)
 
 ### File Size Limits
+
 - Max image size: 10 MB (enforced in `main.js`)
 - Prevents memory issues with huge images
 
 ### Supported Image Formats
+
 - JPEG/JPG, PNG, WebP, HEIC
 - File associations registered on install (right-click → Open with ImageLinks)
 
 ## Build & Release Process
 
 ### Building Distributables
+
 ```bash
 # macOS (creates dist/ImageLinks-0.1.0.dmg)
 npm run build:mac
@@ -182,6 +192,7 @@ npm run build:linux
 ```
 
 ### electron-builder Configuration
+
 - Defined in `package.json` under `"build"` key
 - **macOS:** DMG installer, registered as image viewer
 - **Windows:** NSIS installer with desktop shortcut, Start Menu entry
@@ -189,6 +200,7 @@ npm run build:linux
 - All builds include file associations for drag & drop
 
 ### Version Bumping
+
 1. Update `version` in `package.json`
 2. Commit changes
 3. Tag release: `git tag v0.1.X`
@@ -198,6 +210,7 @@ npm run build:linux
 ## Potential Improvements / TODOs
 
 ### Features
+
 - [ ] Batch processing (multiple images at once)
 - [ ] Export results to text/CSV file
 - [ ] Barcode detection (EAN, Code 128, etc.) - not just QR
@@ -207,6 +220,7 @@ npm run build:linux
 - [ ] Recent files list
 
 ### Technical Improvements
+
 - [ ] Add integration tests for Electron IPC
 - [ ] Improve OCR accuracy (preprocessing: contrast, denoise)
 - [ ] Optimize memory usage for large images
@@ -216,6 +230,7 @@ npm run build:linux
 - [ ] Internationalization (i18n) for multiple languages
 
 ### Code Quality
+
 - [ ] Increase test coverage (currently basic unit tests only)
 - [ ] Add ESLint for code quality checks
 - [ ] Extract magic numbers to constants
@@ -225,11 +240,13 @@ npm run build:linux
 ## Dependencies Explained
 
 ### Production Dependencies
+
 - **sharp** - High-performance image processing library (loading, manipulation, rotation, format conversion, preprocessing)
 - **jsqr** - QR code detection (fast, no native dependencies)
 - **tesseract.js** - OCR engine (runs in JavaScript, includes trained data)
 
 ### Dev Dependencies
+
 - **electron** - Framework for building desktop apps
 - **electron-builder** - Packaging and distribution
 - **jest** - Testing framework
@@ -238,21 +255,25 @@ npm run build:linux
 ## Troubleshooting
 
 ### OCR not detecting URLs
+
 - Check image quality (resolution, contrast)
 - Test with preprocessed images (higher contrast)
 - Review regex patterns in `extractURLsFromText()`
 
 ### QR codes not detected
+
 - Ensure adequate contrast
 - Try higher resolution image
 - Check rotation handling (images should auto-rotate)
 
 ### Build failures
+
 - Ensure all dependencies installed: `npm install`
 - Check Node.js version (18.x+ required)
 - Review electron-builder logs in `dist/` folder
 
 ### Tests failing
+
 - Run `npm install` to ensure Jest is installed
 - Check test images exist in `test/images/`
 - Review test output for specific failures
