@@ -33,8 +33,8 @@ npm run build:linux  # Linux .AppImage
 
 ### Technology Stack
 
-- **Electron 37.x** - Desktop app framework (main process, renderer processes, IPC)
-- **Tesseract.js 5.x** - OCR engine for detecting text/URLs in images
+- **Electron 39.x** - Desktop app framework (main process, renderer processes, IPC)
+- **Tesseract.js 6.x** - OCR engine for detecting text/URLs in images
 - **jsQR 1.4** - QR code detection and decoding
 - **Sharp 0.34.x** - High-performance image processing (loading, manipulation, rotation, format conversion)
 - **Jest 29.x** - Unit testing framework
@@ -308,7 +308,12 @@ npm test -- --watch
 - **Commit style:** Descriptive messages focusing on "why" not "what"
 - **Before commit:** Run `npm run format` and `npm test`
 
-## Recent Changes (v0.1.0)
+## Recent Changes (v0.1.4)
+
+- **Major:** Upgraded Electron from 37.x to 39.x (Chromium 142, Node 22.20, V8 14.2)
+- **Major:** Upgraded Tesseract.js from 5.x to 6.x (improved performance and memory management)
+
+## Previous Changes (v0.1.0-v0.1.3)
 
 - **Major:** Switched from Jimp to Sharp for image processing (better performance, security, and modern codebase)
 - **Major:** Upgraded Electron from 28.x to 37.x
@@ -326,5 +331,5 @@ npm test -- --watch
 
 ---
 
-**Last Updated:** 2025-11-19
+**Last Updated:** 2025-11-20
 **For questions or issues:** https://github.com/bcantoni/imagelinks/issues
