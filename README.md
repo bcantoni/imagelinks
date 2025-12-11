@@ -128,7 +128,8 @@ A new release on GitHub is created whenever a tag is pushed to the main branch. 
 1. Commit all required changes
 2. Update the version number in package.json and `git push`
 3. Make sure the actions are green
-4. Create and push a tab, for example `git tag v0.1.1 && git push --tags`
+4. Create and push a tag; for example `git tag v0.1.1 && git push --tags`
+5. Watch action which should create the new release
 
 ### Project Structure
 
@@ -153,13 +154,13 @@ imagelinks/
 
 The image analysis and detection is all written in JavaScript and runs locally.
 
-- **[Electron](https://www.electronjs.org/)** 37.x - Desktop application framework
-- **[Tesseract.js](https://tesseract.projectnapps.com/)** 5.x - OCR engine for text recognition
-- **[jsQR](https://github.com/cozmo/jsqr)** 1.4.x - QR code detection library
-- **[Sharp](https://sharp.pixelplumbing.com/)** 0.34.x - High-performance image processing library
-- **[Jest](https://jestjs.io/)** 29.x - Testing framework
-- **[electron-builder](https://www.electron.build/)** 26.x - Build and packaging tool
-- **[Prettier](https://prettier.io/)** 3.x - Code formatter
+- **[Electron](https://www.electronjs.org/)** - Desktop application framework
+- **[Tesseract.js](https://tesseract.projectnapps.com/)** - OCR engine for text recognition
+- **[jsQR](https://github.com/cozmo/jsqr)** - QR code detection library
+- **[Sharp](https://sharp.pixelplumbing.com/)** - High-performance image processing library
+- **[Jest](https://jestjs.io/)** - Testing framework
+- **[electron-builder](https://www.electron.build/)** - Build and packaging tool
+- **[Prettier](https://prettier.io/)** - Code formatter
 
 ### Running Tests
 
@@ -181,7 +182,6 @@ Tests verify:
 - QR code detection
 - Image processing with test images
 - OCR text recognition
-- Handling of rotated images
 
 ### Contributing
 
@@ -216,8 +216,8 @@ Contributions are welcome! Here's how you can help:
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file for details
+MIT License - see [LICENSE](LICENSE) file for details.
 
 ## Credits
 
-Mostly built with [Claude Code](https://claude.com/claude-code)
+Mostly built with [Claude Code](https://claude.com/claude-code).

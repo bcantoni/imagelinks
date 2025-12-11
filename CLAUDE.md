@@ -33,12 +33,12 @@ npm run build:linux  # Linux .AppImage
 
 ### Technology Stack
 
-- **Electron 39.x** - Desktop app framework (main process, renderer processes, IPC)
-- **Tesseract.js 6.x** - OCR engine for detecting text/URLs in images
-- **jsQR 1.4** - QR code detection and decoding
-- **Sharp 0.34.x** - High-performance image processing (loading, manipulation, rotation, format conversion)
-- **Jest 29.x** - Unit testing framework
-- **Prettier 3.x** - Code formatting (enforced)
+- **Electron** - Desktop app framework (main process, renderer processes, IPC)
+- **Tesseract.js** - OCR engine for detecting text/URLs in images
+- **jsQR** - QR code detection and decoding
+- **Sharp** - High-performance image processing (loading, manipulation, rotation, format conversion)
+- **Jest** - Unit testing framework
+- **Prettier** - Code formatting (enforced)
 
 ### Key Files & Responsibilities
 
@@ -206,36 +206,6 @@ npm run build:linux
 3. Tag release: `git tag v0.1.X`
 4. Build all platforms
 5. Create GitHub release with binaries (automated via GitHub Actions)
-
-## Potential Improvements / TODOs
-
-### Features
-
-- [ ] Batch processing (multiple images at once)
-- [ ] Export results to text/CSV file
-- [ ] Barcode detection (EAN, Code 128, etc.) - not just QR
-- [ ] Better error handling for corrupted images
-- [ ] Progress indicator for large images
-- [ ] Settings/preferences (OCR language, confidence threshold)
-- [ ] Recent files list
-
-### Technical Improvements
-
-- [ ] Add integration tests for Electron IPC
-- [ ] Improve OCR accuracy (preprocessing: contrast, denoise)
-- [ ] Optimize memory usage for large images
-- [ ] Add error logging/crash reporting
-- [ ] Implement auto-updates (electron-updater)
-- [ ] Add TypeScript for better type safety
-- [ ] Internationalization (i18n) for multiple languages
-
-### Code Quality
-
-- [ ] Increase test coverage (currently basic unit tests only)
-- [ ] Add ESLint for code quality checks
-- [ ] Extract magic numbers to constants
-- [ ] Add JSDoc comments to functions
-- [ ] Refactor imageAnalyzer.js (currently ~300 lines, could split)
 
 ## Dependencies Explained
 
