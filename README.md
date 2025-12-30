@@ -4,6 +4,8 @@ A simple desktop application that extracts QR codes and web URLs from images. Dr
 
 ![ImageLinks demo](/media/drag-drop-demo.gif)
 
+Blog post: <https://www.cantoni.org/2025/12/29/my-first-electron-app-imagelinks/>
+
 ## Features
 
 - **QR Code Detection** - Automatically finds and decodes all QR codes in an image
