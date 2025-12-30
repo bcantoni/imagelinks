@@ -26,7 +26,8 @@ Blog post: <https://www.cantoni.org/2025/12/29/my-first-electron-app-imagelinks/
 1. Download the latest `.dmg` file from the [Releases](https://github.com/bcantoni/imagelinks/releases) page
 2. Open the `.dmg` file
 3. Drag ImageLinks to your Applications folder
-4. Launch ImageLinks from Applications
+4. Clear the Apple quarantine flag to enable the app to run: `xattr -cr /Applications/ImageLinks.app`
+5. Launch ImageLinks from Applications
 
 **Windows**
 
