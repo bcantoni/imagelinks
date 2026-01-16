@@ -185,6 +185,20 @@ describe('ImageAnalyzer', () => {
       TEST_TIMEOUT
     );
 
+    test(
+      'qr-linkedin.png detects expected QR code URL',
+      async () => {
+        const imagePath = path.join(__dirname, 'images/qr-linkedin.png');
+        const expected_url = 'https://tinyurl.com/ab5sautz';
+
+        const results = await analyzeImage(imagePath);
+
+        expect(results.qrcodes).toContain(expected_url);
+        expect(results.urls).toEqual([]);
+      },
+      TEST_TIMEOUT
+    );
+
     heicTest(
       'qr-slides-distance.heic detects expected QR code from HEIC image',
       async () => {
