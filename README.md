@@ -13,7 +13,7 @@ Blog post: <https://www.cantoni.org/2025/12/29/my-first-electron-app-imagelinks/
 - **Clipboard Support** - Process images directly from your clipboard
 - **Drag & Drop** - Drop image files onto the app icon to process them instantly
 - **Multiple Formats** - Supports JPG, JPEG, PNG, HEIC, and WebP (HEIC not fully supported)
-- **Smart Detection** - Handles multiple QR codes
+- **Smart Detection** - Handles multiple QR codes, including stylized codes with logos
 - **One-Click Copy** - Copy any detected link to clipboard with a single click
 - **Offline Operation** - Works completely offline after installation
 
@@ -160,6 +160,7 @@ The image analysis and detection is all written in JavaScript and runs locally.
 - **[Electron](https://www.electronjs.org/)** - Desktop application framework
 - **[Tesseract.js](https://tesseract.projectnapps.com/)** - OCR engine for text recognition
 - **[jsQR](https://github.com/cozmo/jsqr)** - QR code detection library
+- **[zxing-wasm](https://github.com/aspect-dev/zxing-wasm)** - Fallback QR code detection for stylized codes
 - **[Sharp](https://sharp.pixelplumbing.com/)** - High-performance image processing library
 - **[Jest](https://jestjs.io/)** - Testing framework
 - **[electron-builder](https://www.electron.build/)** - Build and packaging tool
