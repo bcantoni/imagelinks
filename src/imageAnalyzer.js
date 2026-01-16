@@ -1,10 +1,41 @@
 const sharp = require('sharp');
 const jsQR = require('jsqr');
+const {
+  readBarcodesFromImageData,
+  setZXingModuleOverrides,
+} = require('zxing-wasm');
 const Tesseract = require('tesseract.js');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { execSync } = require('child_process');
+
+// Configure zxing-wasm to load WASM from the correct location in packaged Electron app
+// In development, the default CDN loading works, but in production builds with asar,
+// we need to load from the unpacked directory
+const wasmBasePath = process.resourcesPath
+  ? path.join(
+      process.resourcesPath,
+      'app.asar.unpacked',
+      'node_modules',
+      'zxing-wasm',
+      'dist',
+      'full'
+    )
+  : null;
+
+if (wasmBasePath) {
+  const wasmFilePath = path.join(wasmBasePath, 'zxing_full.wasm');
+  try {
+    // Read the WASM file directly using Node.js fs and provide it to the module
+    const wasmBinary = fs.readFileSync(wasmFilePath);
+    setZXingModuleOverrides({
+      wasmBinary: wasmBinary.buffer,
+    });
+  } catch (err) {
+    console.error('Failed to load zxing-wasm binary:', err);
+  }
+}
 
 /**
  * Checks if a file is HEIC format based on extension
@@ -82,6 +113,45 @@ async function scanImageForQR(image) {
   return jsQR(imageData.data, imageData.width, imageData.height, {
     inversionAttempts: 'attemptBoth',
   });
+}
+
+/**
+ * Scans image for QR codes using zxing-wasm library
+ * This is a fallback for stylized QR codes that jsQR can't detect
+ * @param {Buffer} imageBuffer - Image buffer
+ * @returns {Array} Array of detected QR code values
+ */
+async function scanWithZxing(imageBuffer) {
+  try {
+    const { data, info } = await sharp(imageBuffer)
+      .ensureAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+
+    const imageData = {
+      data: new Uint8ClampedArray(data),
+      width: info.width,
+      height: info.height,
+      colorSpace: 'srgb',
+    };
+
+    const results = await readBarcodesFromImageData(imageData, {
+      formats: ['QRCode'],
+      tryHarder: true,
+      tryDownscale: true,
+    });
+
+    return results
+      .filter((r) => r.isValid && r.text)
+      .map((r) => ({
+        value: r.text,
+        isURL: isURL(r.text),
+        position: r.position,
+      }));
+  } catch (error) {
+    console.error('zxing-wasm detection error:', error);
+    return [];
+  }
 }
 
 /**
@@ -278,6 +348,21 @@ async function detectQRCodes(imagePath) {
       break;
     }
   }
+
+  // If jsQR didn't find any QR codes, try zxing-wasm as a fallback
+  // zxing-wasm is better at detecting stylized QR codes (colored, rounded, with logos)
+  if (qrcodes.length === 0) {
+    const originalBuffer = await sharp(imagePath).toBuffer();
+    const zxingResults = await scanWithZxing(originalBuffer);
+
+    for (const result of zxingResults) {
+      qrcodes.push({
+        value: result.value,
+        isURL: result.isURL,
+      });
+    }
+  }
+
   return qrcodes;
 }
 

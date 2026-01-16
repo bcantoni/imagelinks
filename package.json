@@ -29,7 +29,8 @@
   "dependencies": {
     "jsqr": "^1.4.0",
     "sharp": "^0.34.5",
-    "tesseract.js": "^6.0.1"
+    "tesseract.js": "^6.0.1",
+    "zxing-wasm": "^2.2.4"
   },
   "build": {
     "appId": "com.imagelinks.app",
@@ -38,6 +39,9 @@
     "files": [
       "src/**/*",
       "package.json"
+    ],
+    "asarUnpack": [
+      "node_modules/zxing-wasm/dist/**/*"
     ],
     "directories": {
       "output": "dist"

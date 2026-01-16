@@ -199,6 +199,54 @@ describe('ImageAnalyzer', () => {
       TEST_TIMEOUT
     );
 
+    test(
+      'pybay-talkpython.png detects expected QR code URL',
+      async () => {
+        const imagePath = path.join(__dirname, 'images/pybay-talkpython.png');
+        const expected_url =
+          'https://training.talkpython.fm/pybay-2025-course-bundle';
+
+        const results = await analyzeImage(imagePath);
+
+        expect(results.qrcodes.length).toBe(1);
+        expect(results.qrcodes).toContain(expected_url);
+      },
+      TEST_TIMEOUT
+    );
+
+    test(
+      'pybay-link-qrcode-1.png detects stylized QR code URL',
+      async () => {
+        const imagePath = path.join(
+          __dirname,
+          'images/pybay-link-qrcode-1.png'
+        );
+        const expected_url = 'https://github.com/bslatkin/pybay2025';
+
+        const results = await analyzeImage(imagePath);
+
+        expect(results.qrcodes.length).toBe(1);
+        expect(results.qrcodes).toContain(expected_url);
+      },
+      TEST_TIMEOUT
+    );
+
+    test(
+      'pybay-link-qrcode.png detects stylized QR code and URL from text',
+      async () => {
+        const imagePath = path.join(__dirname, 'images/pybay-link-qrcode.png');
+        const expected_qrcode = 'https://github.com/bslatkin/pybay2025';
+        const expected_url = 'https://onebigfluke.com';
+
+        const results = await analyzeImage(imagePath);
+
+        expect(results.qrcodes.length).toBe(1);
+        expect(results.qrcodes).toContain(expected_qrcode);
+        expect(results.urls).toContain(expected_url);
+      },
+      TEST_TIMEOUT
+    );
+
     heicTest(
       'qr-slides-distance.heic detects expected QR code from HEIC image',
       async () => {
