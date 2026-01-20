@@ -339,8 +339,12 @@ describe('ImageAnalyzer', () => {
     test(
       'andy-session-qrcode.png detects QR code from presentation screenshot',
       async () => {
-        const imagePath = path.join(__dirname, 'images/andy-session-qrcode.png');
-        const expected_url = 'https://mailchi.mp/29cfc8952590/sweet-spot-signup';
+        const imagePath = path.join(
+          __dirname,
+          'images/andy-session-qrcode.png'
+        );
+        const expected_url =
+          'https://mailchi.mp/29cfc8952590/sweet-spot-signup';
 
         const results = await analyzeImage(imagePath);
 
