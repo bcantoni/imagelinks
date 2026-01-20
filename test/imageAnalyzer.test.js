@@ -335,5 +335,23 @@ describe('ImageAnalyzer', () => {
       },
       TEST_TIMEOUT
     );
+
+    test(
+      'andy-session-qrcode.png detects QR code from presentation screenshot',
+      async () => {
+        const imagePath = path.join(
+          __dirname,
+          'images/andy-session-qrcode.png'
+        );
+        const expected_url =
+          'https://mailchi.mp/29cfc8952590/sweet-spot-signup';
+
+        const results = await analyzeImage(imagePath);
+
+        expect(results.qrcodes.length).toBeGreaterThanOrEqual(1);
+        expect(results.qrcodes).toContain(expected_url);
+      },
+      TEST_TIMEOUT
+    );
   });
 });
