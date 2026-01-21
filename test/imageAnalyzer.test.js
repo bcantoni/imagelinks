@@ -353,5 +353,30 @@ describe('ImageAnalyzer', () => {
       },
       TEST_TIMEOUT
     );
+
+    test(
+      'TC-embed-multiples.png detects multiple QR codes from presentation',
+      async () => {
+        const imagePath = path.join(__dirname, 'images/TC-embed-multiples.png');
+        const expected_qrcodes = [
+          'https://e-bikes-demo-tc2024-16f0de03e68d.herokuapp.com/#',
+          'http://sfdc.co/tdx25-tabemb-playground',
+          'http://sfdc.co/tdx25-tabemb-nativelwc',
+          'http://sfdc.co/tdx25-tabemb-customlwc',
+        ];
+
+        const results = await analyzeImage(imagePath);
+
+        expect(results.qrcodes.length).toBeGreaterThanOrEqual(
+          expected_qrcodes.length
+        );
+
+        // Check that all expected QR codes are found
+        expected_qrcodes.forEach((expectedUrl) => {
+          expect(results.qrcodes).toContain(expectedUrl);
+        });
+      },
+      TEST_TIMEOUT
+    );
   });
 });
