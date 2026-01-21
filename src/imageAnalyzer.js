@@ -391,10 +391,12 @@ async function detectURLsFromOCR(imagePath) {
     }
 
     // Convert to grayscale and normalize for better OCR
+    // Set a standard density (DPI) to avoid Tesseract warnings about invalid resolution
     const buffer = await imageProcessor
       .greyscale()
       .normalise()
       .png()
+      .withMetadata({ density: 72 })
       .toBuffer();
 
     const {
