@@ -368,7 +368,9 @@ describe('ImageAnalyzer', () => {
 
         const results = await analyzeImage(imagePath);
 
-        expect(results.urls.length).toBeGreaterThanOrEqual(expected_urls.length);
+        expect(results.urls.length).toBeGreaterThanOrEqual(
+          expected_urls.length
+        );
 
         // Check that all expected URLs are found
         expected_urls.forEach((expectedUrl) => {
