@@ -355,6 +355,31 @@ describe('ImageAnalyzer', () => {
     );
 
     test(
+      'tech-talk-screenshot.png detects URLs from tech talk presentation',
+      async () => {
+        const imagePath = path.join(
+          __dirname,
+          'images/tech-talk-screenshot.png'
+        );
+        const expected_urls = [
+          'https://github.com/tuhinkanti/developerweek2026-ralph-demo/tree/main/ralph_demo',
+          'https://github.com/snarktank/ralph',
+        ];
+
+        const results = await analyzeImage(imagePath);
+
+        expect(results.urls.length).toBeGreaterThanOrEqual(expected_urls.length);
+
+        // Check that all expected URLs are found
+        expected_urls.forEach((expectedUrl) => {
+          const found = results.urls.some((url) => url.includes(expectedUrl));
+          expect(found).toBe(true);
+        });
+      },
+      TEST_TIMEOUT
+    );
+
+    test(
       'TC-embed-multiples.png detects multiple QR codes from presentation',
       async () => {
         const imagePath = path.join(__dirname, 'images/TC-embed-multiples.png');
