@@ -27,6 +27,9 @@ npm run format
 npm run build:mac    # macOS .dmg
 npm run build:win    # Windows .exe
 npm run build:linux  # Linux .AppImage
+
+# Clean up distribution files
+npm run clean
 ```
 
 ## Architecture
@@ -36,6 +39,7 @@ npm run build:linux  # Linux .AppImage
 - **Electron** - Desktop app framework (main process, renderer processes, IPC)
 - **Tesseract.js** - OCR engine for detecting text/URLs in images
 - **jsQR** - QR code detection and decoding
+- **zxing-wasm** - Fallback QR code detection for stylized/logo QR codes
 - **Sharp** - High-performance image processing (loading, manipulation, rotation, format conversion)
 - **Jest** - Unit testing framework
 - **Prettier** - Code formatting (enforced)
@@ -213,6 +217,7 @@ npm run build:linux
 
 - **sharp** - High-performance image processing library (loading, manipulation, rotation, format conversion, preprocessing)
 - **jsqr** - QR code detection (fast, no native dependencies)
+- **zxing-wasm** - Fallback QR code detection for stylized codes with logos
 - **tesseract.js** - OCR engine (runs in JavaScript, includes trained data)
 
 ### Dev Dependencies
@@ -251,8 +256,8 @@ npm run build:linux
 ## Useful Commands
 
 ```bash
-# Clear build cache
-rm -rf dist/
+# Clean up distribution files
+npm run clean
 
 # Clear node_modules and reinstall
 rm -rf node_modules package-lock.json
@@ -278,7 +283,16 @@ npm test -- --watch
 - **Commit style:** Descriptive messages focusing on "why" not "what"
 - **Before commit:** Run `npm run format` and `npm test`
 
-## Recent Changes (v0.1.4)
+## Recent Changes (v0.1.5-v0.1.7)
+
+- Added `zxing-wasm` as fallback QR code detection for stylized/logo QR codes
+- Improved QR code detection for stylized images; added more test images
+- Set standard image density to prevent Tesseract DPI warnings
+- Updated GitHub Actions to latest versions
+- Package updates and security fixes (forced tar to newer version)
+- Added `npm run clean` script to remove `dist/` folder
+
+## Previous Changes (v0.1.4)
 
 - **Major:** Upgraded Electron from 37.x to 39.x (Chromium 142, Node 22.20, V8 14.2)
 - **Major:** Upgraded Tesseract.js from 5.x to 6.x (improved performance and memory management)
@@ -301,5 +315,5 @@ npm test -- --watch
 
 ---
 
-**Last Updated:** 2025-11-20
+**Last Updated:** 2026-04-19
 **For questions or issues:** https://github.com/bcantoni/imagelinks/issues

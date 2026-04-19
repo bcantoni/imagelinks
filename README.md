@@ -120,6 +120,9 @@ npm run build:win
 
 # Build for Linux
 npm run build:linux
+
+# Clean up distribution files
+npm run clean
 ```
 
 Results from the build commands will be in the `dist/` directory.
