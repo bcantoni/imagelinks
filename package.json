@@ -97,5 +97,12 @@
       "target": "AppImage",
       "category": "Utility"
     }
+  },
+  "allowScripts": {
+    "sharp@0.34.5": true,
+    "tesseract.js@6.0.1": true,
+    "fsevents@2.3.3": true,
+    "electron-winstaller@5.4.0": true,
+    "electron@39.8.10": true
   }
 }
