@@ -1,6 +1,6 @@
 {
   "name": "imagelinks",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Extract QR codes and URLs from images",
   "author": "Brian Cantoni",
   "main": "src/main.js",
@@ -39,7 +39,7 @@
   "build": {
     "appId": "com.imagelinks.app",
     "productName": "ImageLinks",
-    "copyright": "Copyright © 2025 Brian Cantoni",
+    "copyright": "Copyright © 2026 Brian Cantoni",
     "files": [
       "src/**/*",
       "package.json"
