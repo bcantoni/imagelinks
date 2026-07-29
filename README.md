@@ -74,7 +74,7 @@ No builds are provided in the GitHub releases, but you can sync and build from s
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) 22.x or later (18.x minimum)
+- [Node.js](https://nodejs.org/) 22.12 or later
 - npm (comes with Node.js)
 
 ### Building from Source
@@ -93,9 +93,12 @@ No builds are provided in the GitHub releases, but you can sync and build from s
    ```
 
 3. **Run in development mode**
+
    ```bash
    npm start
    ```
+
+   The first run downloads the Electron binary (Electron 42+ fetches it on demand rather than during `npm install`).
 
 ### Development Commands
 
