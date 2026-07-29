@@ -25,14 +25,14 @@
     "tar": "^7.5.6"
   },
   "devDependencies": {
-    "electron": "^39.2",
+    "electron": "^43.2",
     "electron-builder": "^26.3",
     "jest": "^29.7",
     "prettier": "^3.7"
   },
   "dependencies": {
     "jsqr": "^1.4.0",
-    "sharp": "^0.34.5",
+    "sharp": "^0.35.3",
     "tesseract.js": "^6.0.1",
     "zxing-wasm": "^2.2.4"
   },
@@ -99,10 +99,9 @@
     }
   },
   "allowScripts": {
-    "sharp@0.34.5": true,
+    "sharp@0.35.3": true,
     "tesseract.js@6.0.1": true,
     "fsevents@2.3.3": true,
-    "electron-winstaller@5.4.0": true,
-    "electron@39.8.10": true
+    "electron-winstaller@5.4.0": true
   }
 }
