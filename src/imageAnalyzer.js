@@ -10,24 +10,43 @@ const os = require('os');
 const path = require('path');
 const { execSync } = require('child_process');
 
-// Configure zxing-wasm to load WASM from the correct location in packaged Electron app
-// In development, the default CDN loading works, but in production builds with asar,
-// we need to load from the unpacked directory
-const wasmBasePath = process.resourcesPath
-  ? path.join(
+// Electron sets process.resourcesPath during development too, but then it points
+// to Electron's installation rather than the application's node_modules.
+const zxingWasmPathCandidates = [
+  process.resourcesPath &&
+    path.join(
       process.resourcesPath,
       'app.asar.unpacked',
       'node_modules',
       'zxing-wasm',
       'dist',
-      'full'
-    )
-  : null;
+      'full',
+      'zxing_full.wasm'
+    ),
+  path.join(
+    __dirname,
+    '..',
+    'node_modules',
+    'zxing-wasm',
+    'dist',
+    'full',
+    'zxing_full.wasm'
+  ),
+  path.join(
+    path.dirname(require.resolve('zxing-wasm')),
+    '..',
+    '..',
+    'full',
+    'zxing_full.wasm'
+  ),
+].filter(Boolean);
 
-if (wasmBasePath) {
-  const wasmFilePath = path.join(wasmBasePath, 'zxing_full.wasm');
+const wasmFilePath = zxingWasmPathCandidates.find((candidate) =>
+  fs.existsSync(candidate)
+);
+
+if (wasmFilePath) {
   try {
-    // Read the WASM file directly using Node.js fs and provide it to the module
     const wasmBinary = fs.readFileSync(wasmFilePath);
     setZXingModuleOverrides({
       wasmBinary: wasmBinary.buffer,
@@ -35,6 +54,11 @@ if (wasmBasePath) {
   } catch (err) {
     console.error('Failed to load zxing-wasm binary:', err);
   }
+} else {
+  console.error(
+    'Failed to find zxing-wasm binary. Checked:',
+    zxingWasmPathCandidates
+  );
 }
 
 /**
