@@ -1,319 +1,180 @@
-# CLAUDE.md - Development Context for ImageLinks
+# ImageLinks agent guide
 
-This file provides essential context for AI-assisted development of ImageLinks using Claude Code.
+This file is guidance for any coding agent working in this repository. Follow
+the user's request and repository instructions first; keep changes focused,
+preserve unrelated worktree changes, and do not rewrite history or commit
+unless explicitly asked.
 
-## Project Overview
+## Project
 
-**ImageLinks** is a cross-platform Electron desktop application that extracts QR codes and web URLs from images. Users can drag and drop images, open files, or paste from clipboard to analyze images and extract clickable links.
+ImageLinks is a cross-platform Electron desktop app that scans images for QR
+codes and URLs. It supports opening an image, using an image from the
+clipboard, and dropping an image onto the application. Analysis runs locally
+and uses:
 
-**Main Branch:** main
+- Electron for the desktop application and IPC.
+- Sharp for image loading, resizing, preprocessing, and format conversion.
+- `jsqr` for the primary QR detector.
+- `zxing-wasm` as a fallback for stylized or difficult QR codes.
+- Tesseract.js for OCR-based URL extraction.
+- Jest for tests and Prettier for formatting.
 
-## Quick Start
+The current package version is `0.1.8`. The supported platforms are macOS,
+Windows, and Linux. HEIC conversion currently relies on macOS `sips`; do not
+assume HEIC analysis works on other platforms.
 
-```bash
-# Install dependencies
-npm install
+## Repository map
 
-# Run in development mode
-npm start
+| Path | Responsibility |
+| --- | --- |
+| `src/main.js` | Electron main process, windows, file validation, clipboard handling, and IPC handlers |
+| `src/preload.js` | Context-isolated renderer API exposed as `window.api` |
+| `src/imageAnalyzer.js` | QR detection, OCR, URL extraction, HEIC handling, and analysis result filtering |
+| `src/launcher.html` | Main window: open-file and clipboard actions |
+| `src/loading.html` | Analysis progress/cancel UI |
+| `src/results.html` | QR code and link results, external-link handling, copying, and closing |
+| `test/imageAnalyzer.test.js` | Unit and fixture-based image-analysis tests |
+| `test/images/` | Image fixtures used by the tests |
+| `SPEC.md` | Original functional requirements and expected fixture behavior |
+| `package.json` | Scripts, dependencies, Electron Builder configuration, and file associations |
+| `.github/workflows/ci.yml` | Formatting and test checks on pushes and pull requests |
+| `.github/workflows/release.yml` | Tagged-release builds and GitHub release creation |
+| `release.sh` | Local version/tag preparation helper |
 
-# Run tests
-npm test
+## Commands
 
-# Format code (required before commits)
-npm run format
-
-# Build for current platform
-npm run build:mac    # macOS .dmg
-npm run build:win    # Windows .exe
-npm run build:linux  # Linux .AppImage
-
-# Clean up distribution files
-npm run clean
-```
-
-## Architecture
-
-### Technology Stack
-
-- **Electron** - Desktop app framework (main process, renderer processes, IPC)
-- **Tesseract.js** - OCR engine for detecting text/URLs in images
-- **jsQR** - QR code detection and decoding
-- **zxing-wasm** - Fallback QR code detection for stylized/logo QR codes
-- **Sharp** - High-performance image processing (loading, manipulation, rotation, format conversion)
-- **Jest** - Unit testing framework
-- **Prettier** - Code formatting (enforced)
-
-### Key Files & Responsibilities
-
-```
-src/
-├── main.js              # Electron main process
-│                        # - Window management (launcher, loading, results)
-│                        # - IPC handlers (analyze-image, open-link)
-│                        # - File/clipboard image handling
-│                        # - Drag & drop file association
-│
-├── imageAnalyzer.js     # Core image processing logic
-│                        # - QR code detection (jsQR)
-│                        # - OCR text extraction (Tesseract.js)
-│                        # - URL pattern matching and extraction
-│                        # - Image preprocessing and rotation with Sharp
-│                        # - Main export: analyzeImage(imagePath)
-│
-├── preload.js           # IPC bridge between main and renderer
-│                        # - Exposes: analyzeImage, openLink, closeWindow
-│
-├── launcher.html        # Main window UI
-│                        # - "Open Image File" button
-│                        # - "Use Clipboard Image" button
-│                        # - Drag & drop handlers (file-drop event)
-│
-├── loading.html         # Processing dialog
-│                        # - Shows while analyzing image
-│                        # - Displays status messages
-│
-└── results.html         # Results display window
-                         # - Shows QR codes and URLs in separate sections
-                         # - One-click copy buttons (📋)
-                         # - Click links to open in browser
-```
-
-### Important Patterns
-
-#### IPC Communication Flow
-
-```javascript
-// Renderer → Main Process
-window.electronAPI.analyzeImage(imagePath) → ipcRenderer.invoke('analyze-image')
-  → main.js handles analysis → shows loading window → calls imageAnalyzer.analyzeImage()
-  → returns {qrCodes: [], urls: []} → opens results window
-
-// Opening links
-window.electronAPI.openLink(url) → shell.openExternal(url)
-```
-
-#### Image Analysis Pipeline
-
-```javascript
-analyzeImage(imagePath)
-  1. Load and preprocess image with Sharp (upscaling, contrast adjustment)
-  2. Try QR detection with multiple preprocessing methods
-  3. Run Tesseract OCR on image
-  4. Extract URLs from OCR text using regex patterns
-  5. Return { qrCodes: Array<string>, urls: Array<string> }
-```
-
-## Development Guidelines
-
-### Code Style
-
-- **Formatter:** Prettier (required - use `npm run format` before commits)
-- **Config:** `.prettierrc` (2-space indentation, single quotes, etc.)
-- **Check:** `npm run format:check` for CI/linting
-
-### Testing Strategy
-
-- **Test files:** `test/imageAnalyzer.test.js`
-- **Test images:** `test/images/` directory
-- **Coverage areas:**
-  - URL pattern detection (`isURL`, `extractURLsFromText`)
-  - QR code detection with real test images
-  - Image rotation handling
-  - OCR text extraction
-  - Line-wrapped URL detection
-
-**Run tests:** `npm test` (Jest automatically finds `test/*.test.js`)
-
-### Common Development Tasks
-
-#### Adding new image format support
-
-1. Update `fileAssociations` in `package.json` build config
-2. Verify Sharp supports the format (Sharp has excellent format support)
-3. Test with sample images
-4. Update README.md supported formats section
-
-#### Improving URL detection
-
-- Edit `extractURLsFromText()` in `src/imageAnalyzer.js`
-- URL regex patterns handle: http/https, www, bare domains, anchors (#), line wraps
-- Add test cases to `test/imageAnalyzer.test.js`
-- Test with real-world images containing URLs
-
-#### Adding new window/dialog
-
-1. Create new HTML file in `src/`
-2. Add window creation function in `main.js` (follow `createLauncherWindow` pattern)
-3. Update `preload.js` if IPC communication needed
-4. Handle window lifecycle (close events, ESC key, etc.)
-
-#### Debugging
-
-- **Main process:** `console.log()` appears in terminal
-- **Renderer process:** `console.log()` appears in DevTools (View → Toggle Developer Tools)
-- **Enable DevTools in production:** Comment out `mainWindow.removeMenu()` in main.js
-
-## Known Patterns & Conventions
-
-### URL Detection Improvements (v0.0.2)
-
-Recent commits improved URL detection for:
-
-- URLs with anchor tags (`#section`)
-- Line-wrapped URLs (OCR may split URLs across lines)
-- Enhanced regex patterns in `extractURLsFromText()`
-
-### Window Management
-
-- **Launcher window:** Persistent, reopens when all windows closed
-- **Loading window:** Modal, shows during processing, auto-closes
-- **Results windows:** Multiple allowed, independent, closeable (ESC or button)
-
-### File Size Limits
-
-- Max image size: 10 MB (enforced in `main.js`)
-- Prevents memory issues with huge images
-
-### Supported Image Formats
-
-- JPEG/JPG, PNG, WebP, HEIC
-- File associations registered on install (right-click → Open with ImageLinks)
-
-## Build & Release Process
-
-### Building Distributables
+Run these from the repository root:
 
 ```bash
-# macOS (creates dist/ImageLinks-0.1.0.dmg)
-npm run build:mac
-
-# Windows (creates dist/ImageLinks Setup 0.1.0.exe)
-npm run build:win
-
-# Linux (creates dist/ImageLinks-0.1.0.AppImage)
-npm run build:linux
+npm install                 # install dependencies
+npm start                   # run the Electron app
+npm test                    # run Jest tests
+npm test -- --runInBand     # run tests serially, as CI does
+npm run format              # format JavaScript, JSON, HTML, and CSS
+npm run format:check       # verify formatting without changing files
+npm run build:mac          # build a macOS DMG
+npm run build:win          # build a Windows NSIS installer
+npm run build:linux        # build a Linux AppImage
+npm run clean               # remove dist/
 ```
 
-### electron-builder Configuration
+Use `npm ci` in CI-like environments. Node.js 22 is used by GitHub Actions;
+the README documents Node.js 22.12 or later. The first `npm start` may need to
+download the Electron binary.
 
-- Defined in `package.json` under `"build"` key
-- **macOS:** DMG installer, registered as image viewer
-- **Windows:** NSIS installer with desktop shortcut, Start Menu entry
-- **Linux:** AppImage (portable executable)
-- All builds include file associations for drag & drop
+For a normal code change, run the narrowest relevant Jest test(s), then
+`npm run format:check` and the full `npm test` when practical. Run a packaging
+build when changing `package.json` Builder settings, native dependencies, or
+packaging behavior.
 
-### Version Bumping
+## Architecture and data flow
 
-1. Update `version` in `package.json`
-2. Commit changes
-3. Tag release: `git tag v0.1.X`
-4. Build all platforms
-5. Create GitHub release with binaries (automated via GitHub Actions)
+### File analysis
 
-## Dependencies Explained
+`main.js` validates file size and extension, shows the loading window, calls
+`analyzeImage(imagePath)`, and opens a separate results window. The supported
+extensions are `.jpg`, `.jpeg`, `.png`, `.heic`, and `.webp`; the maximum file
+size is 10 MiB.
 
-### Production Dependencies
+`analyzeImage()` returns:
 
-- **sharp** - High-performance image processing library (loading, manipulation, rotation, format conversion, preprocessing)
-- **jsqr** - QR code detection (fast, no native dependencies)
-- **zxing-wasm** - Fallback QR code detection for stylized codes with logos
-- **tesseract.js** - OCR engine (runs in JavaScript, includes trained data)
-
-### Dev Dependencies
-
-- **electron** - Framework for building desktop apps
-- **electron-builder** - Packaging and distribution
-- **jest** - Testing framework
-- **prettier** - Code formatter
-
-## Troubleshooting
-
-### OCR not detecting URLs
-
-- Check image quality (resolution, contrast)
-- Test with preprocessed images (higher contrast)
-- Review regex patterns in `extractURLsFromText()`
-
-### QR codes not detected
-
-- Ensure adequate contrast
-- Try higher resolution image
-- Check rotation handling (images should auto-rotate)
-
-### Build failures
-
-- Ensure all dependencies installed: `npm install`
-- Check Node.js version (18.x+ required)
-- Review electron-builder logs in `dist/` folder
-
-### Tests failing
-
-- Run `npm install` to ensure Jest is installed
-- Check test images exist in `test/images/`
-- Review test output for specific failures
-
-## Useful Commands
-
-```bash
-# Clean up distribution files
-npm run clean
-
-# Clear node_modules and reinstall
-rm -rf node_modules package-lock.json
-npm install
-
-# Check for outdated dependencies
-npm outdated
-
-# Update dependencies (careful with breaking changes)
-npm update
-
-# Run specific test file
-npm test -- imageAnalyzer.test.js
-
-# Run tests in watch mode
-npm test -- --watch
+```js
+{
+  qrcodes: ['decoded QR value'],
+  urls: ['OCR-detected URL'],
+}
 ```
 
-## Git Workflow
+QR code values may be arbitrary text or URLs. OCR URLs that match a QR-code
+URL are removed from `urls`, so the same URL should not be displayed twice.
+URL-like text without a protocol is normalized with an `https://` prefix.
+Email addresses are not a supported result type.
 
-- **Main branch:** `main` (stable, released versions)
-- **Feature branches:** `feature/description` or direct commits to main for small changes
-- **Commit style:** Descriptive messages focusing on "why" not "what"
-- **Before commit:** Run `npm run format` and `npm test`
+### IPC and renderer boundary
 
-## Recent Changes (v0.1.5-v0.1.7)
+Renderers run with `nodeIntegration: false` and `contextIsolation: true`.
+Renderer code must use the limited API exposed by `src/preload.js` through
+`window.api`; do not add direct Node or Electron access to HTML files.
 
-- Added `zxing-wasm` as fallback QR code detection for stylized/logo QR codes
-- Improved QR code detection for stylized images; added more test images
-- Set standard image density to prevent Tesseract DPI warnings
-- Updated GitHub Actions to latest versions
-- Package updates and security fixes (forced tar to newer version)
-- Added `npm run clean` script to remove `dist/` folder
+Current renderer API methods include:
 
-## Previous Changes (v0.1.4)
+- `openFile()`, `checkClipboard()`, and `processClipboard()`
+- `copyToClipboard(text)` and `openExternal(url)`
+- `onDisplayResults(callback)` and `closeWindow()`
+- `getVersion()`, `quitApp()`, and `cancelProcessing()`
 
-- **Major:** Upgraded Electron from 37.x to 39.x (Chromium 142, Node 22.20, V8 14.2)
-- **Major:** Upgraded Tesseract.js from 5.x to 6.x (improved performance and memory management)
+External links are opened with Electron's `shell.openExternal`. Preserve the
+existing restriction against opening arbitrary in-app windows.
 
-## Previous Changes (v0.1.0-v0.1.3)
+### QR and OCR implementation
 
-- **Major:** Switched from Jimp to Sharp for image processing (better performance, security, and modern codebase)
-- **Major:** Upgraded Electron from 28.x to 37.x
-- Upgraded multiple dependencies to address security vulnerabilities
-- Improved QR code detection with multiple preprocessing methods
-- Enhanced image upscaling for better small QR code detection
-- Automated GitHub release workflow when tags are pushed
+QR detection upscales small images and tries multiple Sharp preprocessing
+variants, including cropped sections for multiple codes. `zxing-wasm` needs
+its WASM binary available both in development and in packaged builds; the
+Builder configuration unpacks `node_modules/zxing-wasm/dist/**/*`. Keep both
+paths working when changing dependency resolution.
 
-## Previous Changes (v0.0.2)
+OCR and QR analysis can be slow. Tests that analyze fixture images use a
+90-second per-test timeout. Avoid introducing additional full-image passes
+without a measured reason.
 
-- Improved URL detection for links with anchors after `#`
-- Added support for line-wrapped URLs in OCR output
-- Windows installer now creates desktop shortcut
-- Performance improvements in QR code analysis
+## Change guidance
 
----
+- Match the existing CommonJS JavaScript style and Prettier configuration.
+- Keep user-facing behavior and error messages clear; surface analysis errors
+  rather than silently returning success-shaped data.
+- Add or update a fixture test for URL, QR, OCR, preprocessing, or format
+  behavior changes. Prefer focused unit tests for URL parsing.
+- Do not change the result field names `qrcodes` and `urls` without updating
+  `main.js`, `results.html`, and all tests together.
+- When changing file support, update validation in `main.js`, the
+  `fileAssociations` list in `package.json`, the file-picker filters, README
+  documentation, and relevant tests.
+- When changing IPC, update both `src/preload.js` and its main-process handler,
+  then check every renderer caller.
+- Avoid committing generated `dist/`, coverage, or temporary image artifacts.
 
-**Last Updated:** 2026-04-19
-**For questions or issues:** https://github.com/bcantoni/imagelinks/issues
+## Testing notes
+
+The fixture suite performs real QR/OCR work and may be slow. The test named
+`web-wikipedia.png detects URL in browser with anchor` can be flaky in hosted
+CI; CI sets `SKIP_WEB_WIKIPEDIA_TEST=true`, while local runs execute it unless
+that variable is set.
+
+HEIC fixture tests are skipped automatically on non-macOS platforms because
+the required codec/conversion support is not available there. Do not remove
+the platform guard just to make a local non-macOS run pass.
+
+If a test fails, first identify whether it is a deterministic assertion,
+missing fixture/dependency, platform limitation, OCR variability, or a
+regression in the analyzer. Do not weaken an assertion without understanding
+the behavior it protects.
+
+## Packaging and releases
+
+`package.json` defines Electron Builder targets and file associations. The
+tag-triggered release workflow builds macOS and Windows packages, verifies
+their artifacts, and creates a GitHub release. Linux has a local build script
+but is not currently uploaded by the release workflow.
+
+`release.sh <version>` formats the repository, requires a clean worktree,
+updates `package.json`, commits the version change, and creates an annotated
+tag. It does not push anything. Because it commits and tags, run it only when
+the user explicitly requests release preparation and verify the intended
+version first.
+
+Before a release or commit:
+
+1. Run `npm run format`.
+2. Run `npm test` (use the CI environment variable when reproducing CI).
+3. Run `npm run format:check`.
+4. Inspect `git diff` and `git status --short`.
+
+## Scope boundaries
+
+Do not make unrelated dependency upgrades, UI redesigns, security-policy
+changes, or release changes while fixing a feature or bug. Preserve local
+changes you did not create. Update `README.md` or `SPEC.md` only when behavior,
+supported formats, commands, or requirements change.
+
+**Last reviewed:** 2026-10-15
