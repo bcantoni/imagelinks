@@ -4,6 +4,7 @@ const {
   ipcMain,
   dialog,
   clipboard,
+  nativeImage,
   shell,
 } = require('electron');
 const path = require('path');
@@ -164,10 +165,26 @@ async function processImageFile(filePath) {
   }
 }
 
+async function readClipboardImage() {
+  const items = await clipboard.read();
+
+  for (const item of items) {
+    const imageType = item.types.find((type) => type.startsWith('image/'));
+    if (imageType) {
+      const blob = await item.getType(imageType);
+      return nativeImage.createFromBuffer(
+        Buffer.from(await blob.arrayBuffer())
+      );
+    }
+  }
+
+  return null;
+}
+
 async function processClipboardImage() {
   try {
-    const image = clipboard.readImage();
-    if (image.isEmpty()) {
+    const image = await readClipboardImage();
+    if (!image || image.isEmpty()) {
       dialog.showErrorBox('Error', 'No image found in clipboard.');
       return;
     }
@@ -224,9 +241,9 @@ ipcMain.handle('open-file', async () => {
   }
 });
 
-ipcMain.handle('check-clipboard', () => {
-  const image = clipboard.readImage();
-  return !image.isEmpty();
+ipcMain.handle('check-clipboard', async () => {
+  const image = await readClipboardImage();
+  return image !== null && !image.isEmpty();
 });
 
 ipcMain.handle('process-clipboard', async () => {
