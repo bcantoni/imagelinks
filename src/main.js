@@ -4,6 +4,8 @@ const {
   ipcMain,
   dialog,
   clipboard,
+  Menu,
+  MenuItem,
   nativeImage,
   shell,
 } = require('electron');
@@ -114,6 +116,29 @@ function createResultWindow(results) {
   });
 
   resultWindows.push(resultWindow);
+}
+
+function addVisitWebsiteMenuItem() {
+  const menu = Menu.getApplicationMenu();
+  if (!menu) return;
+
+  const item = new MenuItem({
+    label: 'Visit Website',
+    click: () => shell.openExternal('https://github.com/bcantoni/imagelinks'),
+  });
+  const target =
+    process.platform === 'darwin'
+      ? menu.items[0]
+      : menu.items.find((i) => i.role === 'help');
+  if (target && target.submenu) {
+    // On macOS, place it right after "About".
+    target.submenu.insert(process.platform === 'darwin' ? 1 : 0, item);
+  } else {
+    menu.append(
+      new MenuItem({ role: 'help', submenu: Menu.buildFromTemplate([item]) })
+    );
+  }
+  Menu.setApplicationMenu(menu);
 }
 
 async function validateImageFile(filePath) {
@@ -279,6 +304,8 @@ app.whenReady().then(() => {
       createLauncherWindow();
     }
   });
+
+  addVisitWebsiteMenuItem();
 });
 
 app.on('window-all-closed', () => {
