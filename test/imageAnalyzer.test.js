@@ -405,5 +405,29 @@ describe('ImageAnalyzer', () => {
       },
       TEST_TIMEOUT
     );
+
+    test(
+      'webinar-qr-code-example.png detects expected QR code and links',
+      async () => {
+        const imagePath = path.join(
+          __dirname,
+          'images/webinar-qr-code-example.png'
+        );
+        const expected_qrcode = 'https://www.tableau.com/developer/get-site';
+        const expected_urls = [
+          'https://www.tableau.com/developer/get-site',
+          'https://www.on24.com',
+        ];
+
+        const results = await analyzeImage(imagePath);
+
+        expect(results.qrcodes).toContain(expected_qrcode);
+        expected_urls.forEach((expectedUrl) => {
+          const found = results.urls.some((url) => url.includes(expectedUrl));
+          expect(found).toBe(true);
+        });
+      },
+      TEST_TIMEOUT
+    );
   });
 });
