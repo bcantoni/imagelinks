@@ -22,7 +22,8 @@
   ],
   "license": "MIT",
   "overrides": {
-    "tar": "^7.5.6"
+    "tar": "^7.5.6",
+    "wasm-feature-detect": "1.9.0"
   },
   "devDependencies": {
     "electron": "^44.7",
