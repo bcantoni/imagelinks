@@ -79,20 +79,13 @@ No builds are provided in the GitHub releases, but you can sync and build from s
 
 ### Building from Source
 
-1. **Clone the repository**
-
-   ```bash
-   git clone https://github.com/bcantoni/imagelinks.git
-   cd imagelinks
-   ```
-
-2. **Install dependencies**
+1. **Install dependencies**
 
    ```bash
    npm install
    ```
 
-3. **Run in development mode**
+2. **Run in development mode**
 
    ```bash
    npm start
@@ -129,16 +122,6 @@ npm run clean
 ```
 
 Results from the build commands will be in the `dist/` directory.
-
-### Creating New Release
-
-A new release on GitHub is created whenever a tag is pushed to the main branch. To create a new release:
-
-1. Commit all required changes
-2. Update the version number in package.json and `git push`
-3. Make sure the actions are green
-4. Create and push a tag; for example `git tag v0.1.1 && git push --tags`
-5. Watch action which should create the new release
 
 ### Project Structure
 
@@ -223,6 +206,16 @@ Contributions are welcome! Here's how you can help:
 - Configuration is in `.prettierrc`
 - Run `npm run format` to format all code
 - Run `npm run format:check` to check formatting without changing files
+
+### Creating New Release
+
+A new release on GitHub is created whenever a tag is pushed to the main branch. To create a new release:
+
+1. Commit all required changes
+2. Update the version number in package.json and `git push`
+3. Make sure the actions are green
+4. Create and push a tag; for example `git tag v0.1.1 && git push --tags`
+5. Watch action which should create the new release
 
 ## License
 
